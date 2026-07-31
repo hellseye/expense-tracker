@@ -1,0 +1,19 @@
+{
+  "name": "ledger-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev:client",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "build:client": "cd client && npm run build",
+    "build:server": "cd server && npm run build",
+    "typecheck": "npm run typecheck:client && npm run typecheck:server",
+    "typecheck:client": "cd client && npx tsc --noEmit",
+    "typecheck:server": "cd server && npx tsc --noEmit",
+    "test:api": "node client/src/server/tests/verify-api.js",
+    "prisma:generate": "cd client && npx prisma generate && cd ../server && npx prisma generate",
+    "prisma:push": "cd server && npx prisma db push",
+    "db:seed": "cd server && npm run db:seed"
+  }
+}
