@@ -3,6 +3,8 @@ import { AuthService } from "../services/auth.service";
 import { loginSchema, registerSchema } from "@/validations/auth.validation";
 import { JwtUtils } from "@/utils/jwt";
 
+import { prisma } from "@/lib/db/prisma";
+
 export class AuthController {
   static async login(req: NextRequest) {
     try {
@@ -16,6 +18,7 @@ export class AuthController {
         userId: user.id,
         email: user.email,
         name: user.name,
+        image: user.image,
       });
 
       const response = NextResponse.json({
@@ -26,6 +29,7 @@ export class AuthController {
             name: user.name,
             email: user.email,
             currency: user.currency,
+            image: user.image,
           },
         },
       });
@@ -80,6 +84,7 @@ export class AuthController {
             name: user.name,
             email: user.email,
             currency: user.currency,
+            image: user.image,
           },
         },
       }, { status: 201 });
@@ -142,6 +147,17 @@ export class AuthController {
       );
     }
 
+    let userImage = payload.image || null;
+    if (payload.userId) {
+      const dbUser = await prisma.user.findUnique({
+        where: { id: payload.userId },
+        select: { image: true },
+      }).catch(() => null);
+      if (dbUser?.image) {
+        userImage = dbUser.image;
+      }
+    }
+
     return NextResponse.json({
       success: true,
       data: {
@@ -149,6 +165,7 @@ export class AuthController {
           id: payload.userId,
           email: payload.email,
           name: payload.name,
+          image: userImage,
         },
       },
     });

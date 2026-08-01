@@ -476,23 +476,45 @@ export function SettingsView() {
               <div>
                 <h3 className="text-base font-bold text-zinc-100 flex items-center gap-2">
                   <Info className="h-4.5 w-4.5 text-blue-400" />
-                  <span>About Application</span>
+                  <span>About Application & Architecture</span>
                 </h3>
-                <p className="text-xs text-zinc-400 mt-1">Application build version and software dependencies info.</p>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Ledger is a high-performance personal finance dashboard crafted with linear aesthetics and zero-knowledge field-level privacy.
+                </p>
+              </div>
+
+              {/* Engineering Stats Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+                <div className="p-3 rounded-xl bg-surface-200/50 border border-white/5 space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-zinc-500">Framework</span>
+                  <p className="text-xs font-bold text-zinc-200">Next.js 15 App Router</p>
+                </div>
+                <div className="p-3 rounded-xl bg-surface-200/50 border border-white/5 space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-zinc-500">Database</span>
+                  <p className="text-xs font-bold text-zinc-200">Neon PostgreSQL</p>
+                </div>
+                <div className="p-3 rounded-xl bg-surface-200/50 border border-white/5 space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-zinc-500">Encryption</span>
+                  <p className="text-xs font-bold text-emerald-400">AES-256-GCM</p>
+                </div>
+                <div className="p-3 rounded-xl bg-surface-200/50 border border-white/5 space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-zinc-500">Performance</span>
+                  <p className="text-xs font-bold text-primary">&lt; 50ms Edge</p>
+                </div>
               </div>
 
               <div className="pt-4 border-t border-white/5 space-y-3">
                 <div className="flex justify-between text-xs">
                   <span className="text-zinc-400">Product Name</span>
-                  <span className="text-zinc-100 font-semibold">Ledger Ledger Personal</span>
+                  <span className="text-zinc-100 font-semibold">Ledger Personal Finance</span>
                 </div>
                 <div className="flex justify-between text-xs">
                   <span className="text-zinc-400">Build Version</span>
-                  <span className="text-zinc-100 font-mono">v1.2.0 (macOS Tahoe Theme)</span>
+                  <span className="text-zinc-100 font-mono">v1.5.0 (Tahoe Release)</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-zinc-400">Author</span>
-                  <span className="text-zinc-100">Ledger Development Team</span>
+                  <span className="text-zinc-400">Crafted By</span>
+                  <span className="text-zinc-100 font-semibold">Mayank & Ledger Dev Team</span>
                 </div>
               </div>
             </Card>
