@@ -1,8 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 
+function getBaseUrl(req: NextRequest) {
+  if (process.env.NEXTAUTH_URL && !process.env.NEXTAUTH_URL.includes("localhost")) {
+    return process.env.NEXTAUTH_URL.replace(/\/$/, "");
+  }
+  if (process.env.BETTER_AUTH_URL && !process.env.BETTER_AUTH_URL.includes("localhost")) {
+    return process.env.BETTER_AUTH_URL.replace(/\/$/, "");
+  }
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || req.nextUrl.host;
+  const proto = req.headers.get("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https");
+  return `${proto}://${host}`;
+}
+
 export async function GET(req: NextRequest) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
-  const redirectUri = `${process.env.NEXTAUTH_URL || "http://localhost:3001"}/api/auth/google/callback`;
+  const baseUrl = getBaseUrl(req);
+  const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
   if (!clientId || clientId === "placeholder" || !process.env.GOOGLE_CLIENT_SECRET) {
     return NextResponse.json(

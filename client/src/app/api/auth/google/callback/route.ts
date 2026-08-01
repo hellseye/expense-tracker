@@ -2,12 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { JwtUtils } from "@/utils/jwt";
 
+function getBaseUrl(req: NextRequest) {
+  if (process.env.NEXTAUTH_URL && !process.env.NEXTAUTH_URL.includes("localhost")) {
+    return process.env.NEXTAUTH_URL.replace(/\/$/, "");
+  }
+  if (process.env.BETTER_AUTH_URL && !process.env.BETTER_AUTH_URL.includes("localhost")) {
+    return process.env.BETTER_AUTH_URL.replace(/\/$/, "");
+  }
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || req.nextUrl.host;
+  const proto = req.headers.get("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https");
+  return `${proto}://${host}`;
+}
+
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
   const error = url.searchParams.get("error");
+  const baseUrl = getBaseUrl(req);
 
-  const fallbackRedirect = `${url.origin}/login`;
+  const fallbackRedirect = `${baseUrl}/login`;
 
   if (error) {
     console.error("Google OAuth error callback:", error);
@@ -20,7 +33,6 @@ export async function GET(req: NextRequest) {
 
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  const baseUrl = process.env.NEXTAUTH_URL || process.env.BETTER_AUTH_URL || "http://localhost:3001";
   const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
   try {
