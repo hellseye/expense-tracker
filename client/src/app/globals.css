@@ -4,11 +4,11 @@
 
 @layer base {
   :root {
-    --background: #05070d;
+    --background: #0d0d12;
     --foreground: #f4f4f5;
-    --surface-100: #121215;
-    --surface-200: #1c1c21;
-    --surface-300: #27272a;
+    --surface-100: #15151b;
+    --surface-200: #1d1d26;
+    --surface-300: #262633;
     --border: rgba(255, 255, 255, 0.08);
     --primary: #8b5cf6;
     --primary-hover: #7c3aed;
@@ -18,32 +18,32 @@
   }
 
   .dark {
-    --background: #05070d;
+    --background: #0d0d12;
     --foreground: #f4f4f5;
-    --surface-100: #121215;
-    --surface-200: #1c1c21;
-    --surface-300: #27272a;
+    --surface-100: #15151b;
+    --surface-200: #1d1d26;
+    --surface-300: #262633;
     --border: rgba(255, 255, 255, 0.08);
   }
 
   .light {
-    --background: #f8fafc;
-    --foreground: #0f172a;
+    --background: #e4e4e9;
+    --foreground: #09090b;
     --surface-100: #ffffff;
-    --surface-200: #f1f5f9;
-    --surface-300: #e2e8f0;
-    --border: rgba(0, 0, 0, 0.08);
-    --primary: #7c3aed;
-    --primary-hover: #6d28d9;
-    --primary-glow: rgba(124, 58, 237, 0.15);
+    --surface-200: #f4f4f7;
+    --surface-300: #e8e8ee;
+    --border: rgba(0, 0, 0, 0.1);
+    --primary: #8b5cf6;
+    --primary-hover: #7c3aed;
+    --primary-glow: rgba(139, 92, 246, 0.15);
   }
 
   .oled {
     --background: #000000;
     --foreground: #ffffff;
-    --surface-100: #050505;
-    --surface-200: #0a0a0a;
-    --surface-300: #141414;
+    --surface-100: #080808;
+    --surface-200: #121212;
+    --surface-300: #1a1a1a;
     --border: rgba(255, 255, 255, 0.12);
   }
 

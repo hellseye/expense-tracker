@@ -15,6 +15,9 @@ import {
   ToggleLeft,
   ToggleRight,
   Sparkles,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -269,32 +272,75 @@ export function SettingsView() {
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
-                    { id: "system", label: "System", previewClass: "bg-gradient-to-br from-zinc-800 to-zinc-200" },
-                    { id: "light", label: "Light", previewClass: "bg-zinc-100" },
-                    { id: "dark", label: "Dark", previewClass: "bg-zinc-900 border border-white/5" },
-                    { id: "oled", label: "OLED", previewClass: "bg-black border border-white/10" },
+                    {
+                      id: "system",
+                      label: "System",
+                      icon: Monitor,
+                      boxClass: "bg-gradient-to-tr from-zinc-900 via-zinc-800 to-zinc-100 border border-white/10",
+                      innerBg: "bg-zinc-800/80",
+                      lineClass: "bg-zinc-400/40",
+                    },
+                    {
+                      id: "light",
+                      label: "Light",
+                      icon: Sun,
+                      boxClass: "bg-zinc-100 border border-zinc-300",
+                      innerBg: "bg-white border border-zinc-200",
+                      lineClass: "bg-zinc-400",
+                    },
+                    {
+                      id: "dark",
+                      label: "Dark",
+                      icon: Moon,
+                      boxClass: "bg-zinc-900 border border-white/10",
+                      innerBg: "bg-zinc-950 border border-white/5",
+                      lineClass: "bg-zinc-600",
+                    },
+                    {
+                      id: "oled",
+                      label: "OLED",
+                      icon: Moon,
+                      boxClass: "bg-black border border-white/15",
+                      innerBg: "bg-black border border-white/10",
+                      lineClass: "bg-zinc-700",
+                    },
                   ].map((mode) => {
                     const isSelected = theme === mode.id;
+                    const ModeIcon = mode.icon;
                     return (
                       <button
                         key={mode.id}
                         onClick={() => updateSettingsMutation.mutate({ theme: mode.id })}
-                        className={`group relative p-3 rounded-xl border bg-surface-200/40 text-left transition-all ${
+                        className={`group relative p-3 rounded-2xl border bg-surface-200/40 text-left transition-all ${
                           isSelected
-                            ? "border-primary ring-2 ring-primary/30"
+                            ? "border-primary ring-2 ring-primary/40 shadow-glow-sm bg-primary/5"
                             : "border-white/5 hover:border-white/10"
                         }`}
                       >
-                        <div className={`h-16 w-full rounded-lg mb-2 ${mode.previewClass} overflow-hidden flex items-center justify-center`}>
-                          <div className="w-8 h-1.5 bg-zinc-500/20 rounded-full" />
+                        {/* SKLauncher Style Wireframe Preview Card */}
+                        <div
+                          className={`h-20 w-full rounded-xl mb-3 ${mode.boxClass} p-2 flex flex-col justify-between overflow-hidden shadow-inner relative`}
+                        >
+                          <div className="flex items-center gap-1.5 opacity-60">
+                            <div className="h-1.5 w-1.5 rounded-full bg-current" />
+                            <div className="h-1 w-8 rounded-full bg-current opacity-40" />
+                          </div>
+                          <div className={`p-1.5 rounded-lg ${mode.innerBg} space-y-1`}>
+                            <div className={`h-1 w-full rounded-full ${mode.lineClass}`} />
+                            <div className={`h-1 w-2/3 rounded-full ${mode.lineClass}`} />
+                          </div>
                         </div>
-                        <span className="text-xs font-semibold text-zinc-300 group-hover:text-zinc-100 transition-colors">
-                          {mode.label}
-                        </span>
+
+                        <div className="flex items-center gap-2">
+                          <ModeIcon className="h-3.5 w-3.5 text-zinc-400 group-hover:text-primary transition-colors" />
+                          <span className="text-xs font-bold text-zinc-300 group-hover:text-zinc-100 transition-colors">
+                            {mode.label}
+                          </span>
+                        </div>
 
                         {isSelected && (
                           <div className="absolute top-2 right-2 h-4 w-4 rounded-full bg-primary flex items-center justify-center shadow-glow">
-                            <Check className="h-2.5 w-2.5 text-white stroke-[3px]" />
+                            <Check className="h-2.5 w-2.5 text-white stroke-[3.5px]" />
                           </div>
                         )}
                       </button>
@@ -311,19 +357,19 @@ export function SettingsView() {
                 </div>
 
                 {/* Swatches Grid */}
-                <div className="flex flex-wrap gap-2.5">
+                <div className="grid grid-cols-6 sm:grid-cols-6 gap-2.5">
                   {accentSwatches.map((color) => {
                     const isSelected = accentColor === color;
                     return (
                       <button
                         key={color}
                         onClick={() => handleAccentChange(color)}
-                        className="h-9 w-9 rounded-full relative flex items-center justify-center transition-transform hover:scale-105"
+                        className="h-10 w-full rounded-xl relative flex items-center justify-center transition-transform hover:scale-105 border border-white/10 shadow-sm"
                         style={{ backgroundColor: color }}
                       >
                         {isSelected && (
-                          <div className="h-4 w-4 rounded-full bg-white flex items-center justify-center shadow-md">
-                            <Check className="h-2.5 w-2.5 text-zinc-900 stroke-[4px]" />
+                          <div className="h-4.5 w-4.5 rounded-full bg-white flex items-center justify-center shadow-md">
+                            <Check className="h-3 w-3 text-zinc-900 stroke-[4px]" />
                           </div>
                         )}
                       </button>
