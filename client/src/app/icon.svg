@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6" />
+      <stop offset="50%" stop-color="#6366F1" />
+      <stop offset="100%" stop-color="#3B82F6" />
+    </linearGradient>
+    <linearGradient id="glyphGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="100%" stop-color="#E0E7FF" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+  
+  <!-- Outer Rounded Badge -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+  
+  <!-- Subtle Inner Border -->
+  <rect x="16" y="16" width="480" height="480" rx="112" fill="none" stroke="#FFFFFF" stroke-opacity="0.25" stroke-width="8" />
+
+  <!-- Ascending Bar Graph & Glowing Wallet Symbol -->
+  <g filter="url(#glow)">
+    <rect x="120" y="270" width="64" height="122" rx="28" fill="url(#glyphGrad)" opacity="0.75" />
+    <rect x="224" y="190" width="64" height="202" rx="28" fill="url(#glyphGrad)" opacity="0.9" />
+    <rect x="328" y="120" width="64" height="272" rx="28" fill="url(#glyphGrad)" opacity="1" />
+    <circle cx="360" cy="150" r="14" fill="#F59E0B" />
+  </g>
+</svg>

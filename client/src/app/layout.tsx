@@ -5,6 +5,11 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Ledger - Minimal Personal Expense Tracker",
   description: "A fast, beautiful, personal finance dashboard inspired by SKLauncher, Linear, Raycast & Notion.",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
