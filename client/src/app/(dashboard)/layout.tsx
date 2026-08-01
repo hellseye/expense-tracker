@@ -58,7 +58,7 @@ function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
       {/* Main Content Card Container */}
       <div className="relative z-10 flex flex-1 flex-col overflow-hidden rounded-[24px] border border-border bg-surface-100/90 shadow-card transition-colors duration-300">
         <Navbar onOpenQuickAdd={openQuickAdd} />
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-8">
           {children}
         </main>
       </div>

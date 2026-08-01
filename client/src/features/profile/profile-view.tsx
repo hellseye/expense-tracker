@@ -155,8 +155,17 @@ export function ProfileView() {
         <Card className="p-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/5">
             <div className="flex items-center gap-4">
-              <div className="h-16 w-16 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-xl font-bold text-white shadow-glow">
-                {name.charAt(0).toUpperCase() || "U"}
+              <div className="h-16 w-16 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-xl font-bold text-white shadow-glow overflow-hidden shrink-0">
+                {profile?.image ? (
+                  <img
+                    src={profile.image}
+                    alt={name || "User Profile"}
+                    className="h-full w-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  name.charAt(0).toUpperCase() || "U"
+                )}
               </div>
 
               <div>
