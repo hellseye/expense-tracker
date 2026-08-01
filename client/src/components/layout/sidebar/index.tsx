@@ -131,6 +131,16 @@ export function Sidebar() {
           <Plus className="h-5 w-5 stroke-[3px]" />
         </button>
 
+        {/* Settings Link */}
+        <Link
+          href="/settings"
+          className={`flex flex-col items-center justify-center p-1.5 rounded-xl transition-all ${
+            isSettingsActive ? "text-primary scale-110 font-bold" : "text-zinc-400 hover:text-zinc-200"
+          }`}
+        >
+          <Settings className="h-5 w-5" />
+        </Link>
+
         {/* Profile Link with Avatar */}
         <Link
           href="/profile"
