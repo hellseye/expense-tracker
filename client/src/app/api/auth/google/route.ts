@@ -1,15 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 
 function getBaseUrl(req: NextRequest) {
+  let url = "";
   if (process.env.NEXTAUTH_URL && !process.env.NEXTAUTH_URL.includes("localhost")) {
-    return process.env.NEXTAUTH_URL.replace(/\/$/, "");
+    url = process.env.NEXTAUTH_URL;
+  } else if (process.env.BETTER_AUTH_URL && !process.env.BETTER_AUTH_URL.includes("localhost")) {
+    url = process.env.BETTER_AUTH_URL;
+  } else {
+    const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || req.nextUrl.host;
+    const proto = req.headers.get("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https");
+    url = `${proto}://${host}`;
   }
-  if (process.env.BETTER_AUTH_URL && !process.env.BETTER_AUTH_URL.includes("localhost")) {
-    return process.env.BETTER_AUTH_URL.replace(/\/$/, "");
-  }
-  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || req.nextUrl.host;
-  const proto = req.headers.get("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
+  return url.replace(/\/+$/, "");
 }
 
 export async function GET(req: NextRequest) {
