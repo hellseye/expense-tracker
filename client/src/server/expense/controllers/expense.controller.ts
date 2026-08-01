@@ -20,14 +20,20 @@ export class ExpenseController {
     try {
       const userId = this.getUserId(req);
       const url = new URL(req.url);
-      
+      const categoryIdParam = url.searchParams.get("categoryId");
+      const paymentMethodParam = url.searchParams.get("paymentMethod");
+      let sortByParam = url.searchParams.get("sortBy");
+      if (sortByParam === "date") {
+        sortByParam = "expenseDate";
+      }
+
       const rawParams = {
         search: url.searchParams.get("search") || undefined,
-        categoryId: url.searchParams.get("categoryId") || undefined,
-        paymentMethod: url.searchParams.get("paymentMethod") || undefined,
+        categoryId: categoryIdParam && categoryIdParam !== "ALL" ? categoryIdParam : undefined,
+        paymentMethod: paymentMethodParam && paymentMethodParam !== "ALL" ? paymentMethodParam : undefined,
         startDate: url.searchParams.get("startDate") || undefined,
         endDate: url.searchParams.get("endDate") || undefined,
-        sortBy: url.searchParams.get("sortBy") || undefined,
+        sortBy: sortByParam || undefined,
         sortOrder: url.searchParams.get("sortOrder") || undefined,
         page: url.searchParams.get("page") || undefined,
         limit: url.searchParams.get("limit") || undefined,

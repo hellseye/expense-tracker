@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Wallet, Mail, Lock, ArrowRight, Chrome } from "lucide-react";
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -10,8 +11,8 @@ import { useAuth } from "@/lib/auth/auth-context";
 
 export function LoginView() {
   const { login, loginWithGoogle } = useAuth();
-  const [email, setEmail] = React.useState("mayank@ledger.dev");
-  const [password, setPassword] = React.useState("••••••••••••");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
 
@@ -56,7 +57,7 @@ export function LoginView() {
   };
 
   const handleDemoAccess = async () => {
-    await login("mayank@ledger.dev");
+    await login("mayank@ledger.dev", "password123");
     toast({
       type: "success",
       title: "Guest Session Active",
@@ -126,6 +127,15 @@ export function LoginView() {
             <Button variant="secondary" onClick={handleDemoAccess} className="w-full border-primary/30 text-primary hover:bg-primary/10">
               <span>Instant Demo / Guest Access</span>
             </Button>
+          </div>
+
+          <div className="text-center pt-2 border-t border-white/5">
+            <p className="text-xs text-zinc-400">
+              Don't have an account?{" "}
+              <Link href="/register" className="text-primary hover:underline font-semibold transition-all">
+                Sign Up
+              </Link>
+            </p>
           </div>
         </Card>
       </div>

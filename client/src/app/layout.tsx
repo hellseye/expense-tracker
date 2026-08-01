@@ -14,12 +14,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className="min-h-screen antialiased bg-[radial-gradient(circle_at_top_center,_#8b5cf6_0%,_rgba(139,92,246,0.14)_24%,_transparent_48%),linear-gradient(180deg,_#8b5cf6_0%,_#000000_100%)] text-foreground">
+      <body className="min-h-screen antialiased bg-background text-foreground transition-colors duration-300">
         <Providers>{children}</Providers>
       </body>
-      {/* <body>
-        <Providers>{children}</Providers>
-      </body> */}
     </html>
   );
 }

@@ -15,10 +15,12 @@ import { SidebarButton } from "./sidebar-button";
 import { Divider } from "./divider";
 import { Tooltip } from "./tooltip";
 import { useModal } from "@/components/shared/modal-context";
+import { useAuth } from "@/lib/auth/auth-context";
 
 export function Sidebar() {
   const pathname = usePathname();
   const { openQuickAdd } = useModal();
+  const { user } = useAuth();
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -29,9 +31,11 @@ export function Sidebar() {
 
   const isProfileActive = pathname === "/profile";
   const isSettingsActive = pathname === "/settings";
+  
+  const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
 
   return (
-    <aside className="relative z-50 h-full w-20 shrink-0 flex flex-col items-center py-5 rounded-[24px] border border-white/10 bg-black shadow-card select-none">
+    <aside className="relative z-50 h-full w-20 shrink-0 flex flex-col items-center py-5 rounded-[24px] border border-border bg-surface-100 shadow-card transition-colors duration-300 select-none">
       {/* Top: User Avatar (Profile) */}
       <Tooltip content="Profile">
         <Link href="/profile" className="focus:outline-none">
@@ -40,7 +44,7 @@ export function Sidebar() {
               isProfileActive ? "ring-2 ring-primary ring-offset-2 ring-offset-zinc-950" : ""
             }`}
           >
-            M
+            {userInitial}
           </div>
         </Link>
       </Tooltip>

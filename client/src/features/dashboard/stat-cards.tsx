@@ -15,8 +15,8 @@ interface StatCardsProps {
 export function StatCards({ analytics, isLoading }: StatCardsProps) {
   if (isLoading || !analytics) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[1, 2, 3, 4].map((i) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {[1, 2].map((i) => (
           <Skeleton key={i} className="h-32 w-full rounded-2xl" />
         ))}
       </div>
@@ -35,39 +35,19 @@ export function StatCards({ analytics, isLoading }: StatCardsProps) {
       isPositive: false,
     },
     {
-      title: "Monthly Income",
-      value: formatCurrency(analytics.totalIncome),
-      subtitle: "Estimated monthly allocation",
-      icon: Wallet,
-      color: "text-emerald-400",
-      bg: "bg-emerald-500/10 border-emerald-500/20",
-      trend: "Stable baseline",
-      isPositive: true,
-    },
-    {
-      title: "Remaining Balance",
-      value: formatCurrency(analytics.remainingBalance),
-      subtitle: "Available budget cushion",
-      icon: TrendingUp,
-      color: "text-blue-400",
-      bg: "bg-blue-500/10 border-blue-500/20",
-      trend: `${((analytics.remainingBalance / analytics.totalIncome) * 100).toFixed(0)}% remaining`,
-      isPositive: true,
-    },
-    {
       title: "Today's Spending",
       value: formatCurrency(analytics.todaySpending),
       subtitle: "Transactions today",
       icon: Calendar,
       color: "text-amber-400",
       bg: "bg-amber-500/10 border-amber-500/20",
-      trend: "2 transactions recorded",
+      trend: "Daily summary",
       isPositive: true,
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {cards.map((card, index) => {
         const Icon = card.icon;
         return (

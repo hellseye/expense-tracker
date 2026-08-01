@@ -4,17 +4,57 @@
 
 @layer base {
   :root {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
+    --background: #05070d;
+    --foreground: #f4f4f5;
+    --surface-100: #121215;
+    --surface-200: #1c1c21;
+    --surface-300: #27272a;
+    --border: rgba(255, 255, 255, 0.08);
+    --primary: #8b5cf6;
+    --primary-hover: #7c3aed;
+    --primary-glow: rgba(139, 92, 246, 0.25);
+    --secondary: #d946ef;
+    --primary-gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+  }
+
+  .dark {
+    --background: #05070d;
+    --foreground: #f4f4f5;
+    --surface-100: #121215;
+    --surface-200: #1c1c21;
+    --surface-300: #27272a;
+    --border: rgba(255, 255, 255, 0.08);
+  }
+
+  .light {
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    --surface-100: #ffffff;
+    --surface-200: #f1f5f9;
+    --surface-300: #e2e8f0;
+    --border: rgba(0, 0, 0, 0.08);
+    --primary: #7c3aed;
+    --primary-hover: #6d28d9;
+    --primary-glow: rgba(124, 58, 237, 0.15);
+  }
+
+  .oled {
+    --background: #000000;
+    --foreground: #ffffff;
+    --surface-100: #050505;
+    --surface-200: #0a0a0a;
+    --surface-300: #141414;
+    --border: rgba(255, 255, 255, 0.12);
   }
 
   body {
     min-height: 100vh;
-    background-color: #05070d;
-    color: #f4f4f5;
+    background-color: var(--background);
+    color: var(--foreground);
     font-family: var(--font-geist-sans), "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
     overflow-x: hidden;
     background-attachment: fixed;
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
@@ -34,5 +74,5 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.5);
+  background: var(--primary);
 }

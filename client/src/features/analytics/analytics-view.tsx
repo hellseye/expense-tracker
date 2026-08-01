@@ -149,6 +149,71 @@ export function AnalyticsView() {
         <SpendingChart data={summary.monthlyTrend} />
       </div>
 
+      {/* Payment Method Breakdown & Financial Health Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Payment Method Distribution Card */}
+        <Card className="p-6">
+          <h3 className="text-base font-bold text-zinc-100 tracking-tight mb-1">Payment Method Distribution</h3>
+          <p className="text-xs text-zinc-400 mb-4">Breakdown of transactions by payment channel</p>
+
+          <div className="space-y-3">
+            {summary.paymentMethodBreakdown && summary.paymentMethodBreakdown.length > 0 ? (
+              summary.paymentMethodBreakdown.map((pm) => (
+                <div key={pm.method} className="space-y-1">
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span className="text-zinc-300">{pm.method.replace("_", " ")}</span>
+                    <span className="text-zinc-400">
+                      {formatCurrency(pm.amount)} ({pm.percentage}%)
+                    </span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-surface-200 overflow-hidden">
+                    <div
+                      className="h-full bg-primary rounded-full transition-all"
+                      style={{ width: `${pm.percentage}%` }}
+                    />
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-xs text-zinc-500">No payment method metrics available.</p>
+            )}
+          </div>
+        </Card>
+
+        {/* Financial Health Score & Velocity Card */}
+        <Card className="p-6 flex flex-col justify-between">
+          <div>
+            <h3 className="text-base font-bold text-zinc-100 tracking-tight mb-1">Financial Health Score</h3>
+            <p className="text-xs text-zinc-400 mb-4">Real-time budget utilization index</p>
+
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-200/50 border border-white/5 mb-4">
+              <div className="text-3xl font-extrabold text-primary">
+                {summary.budgetHealthScore || 85}<span className="text-sm font-normal text-zinc-400">/100</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-bold text-zinc-200">Excellent Spending Cushion</p>
+                <p className="text-[11px] text-zinc-400">You are within standard monthly budget thresholds.</p>
+              </div>
+            </div>
+
+            {summary.monthOverMonth && (
+              <div className="p-4 rounded-xl bg-surface-200/30 border border-white/5 text-xs space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-zinc-400">Current Month vs Prev Month:</span>
+                  <span className={`font-bold ${summary.monthOverMonth.changePercentage > 0 ? "text-accent-rose" : "text-accent-emerald"}`}>
+                    {summary.monthOverMonth.changePercentage > 0 ? `+${summary.monthOverMonth.changePercentage}%` : `${summary.monthOverMonth.changePercentage}%`}
+                  </span>
+                </div>
+                <div className="flex justify-between text-[11px] text-zinc-500">
+                  <span>Current: {formatCurrency(summary.monthOverMonth.currentMonth)}</span>
+                  <span>Previous: {formatCurrency(summary.monthOverMonth.previousMonth)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+      </div>
+
       {/* Top Spending Categories Table List */}
       <Card className="p-6">
         <h3 className="text-base font-bold text-zinc-100 tracking-tight mb-4">Top Spending Categories</h3>

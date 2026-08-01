@@ -12,23 +12,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#09090b",
-        foreground: "#f4f4f5",
+        background: "var(--background)",
+        foreground: "var(--foreground)",
         surface: {
-          50: "#18181b",
-          100: "#121215",
-          200: "#1c1c21",
-          300: "#27272a",
+          50: "var(--surface-100)",
+          100: "var(--surface-100)",
+          200: "var(--surface-200)",
+          300: "var(--surface-300)",
           400: "#3f3f46",
         },
-        border: "rgba(255, 255, 255, 0.08)",
-        input: "rgba(255, 255, 255, 0.06)",
+        border: "var(--border)",
+        input: "var(--border)",
         ring: "#8b5cf6",
         primary: {
-          DEFAULT: "#8b5cf6",
+          DEFAULT: "var(--primary)",
           foreground: "#ffffff",
-          hover: "#7c3aed",
-          glow: "rgba(139, 92, 246, 0.25)",
+          hover: "var(--primary-hover)",
+          glow: "var(--primary-glow)",
         },
         accent: {
           purple: "#a855f7",

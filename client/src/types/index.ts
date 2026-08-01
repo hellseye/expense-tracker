@@ -67,6 +67,11 @@ export interface AnalyticsSummary {
     percentage: number;
     count: number;
   }[];
+  paymentMethodBreakdown?: {
+    method: string;
+    amount: number;
+    percentage: number;
+  }[];
   monthlyTrend: {
     month: string;
     amount: number;
@@ -79,6 +84,12 @@ export interface AnalyticsSummary {
   }[];
   highestExpense: Expense | null;
   averageDailySpending: number;
+  monthOverMonth?: {
+    currentMonth: number;
+    previousMonth: number;
+    changePercentage: number;
+  };
+  budgetHealthScore?: number;
 }
 
 export interface ApiResponse<T> {

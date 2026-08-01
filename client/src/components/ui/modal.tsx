@@ -70,12 +70,12 @@ export function Modal({
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: "spring", duration: 0.3, bounce: 0 }}
             className={cn(
-              "relative z-10 w-full rounded-2xl border border-white/10 bg-surface-100/95 p-6 shadow-2xl backdrop-blur-2xl text-zinc-100",
+              "relative z-10 w-full max-h-[88vh] flex flex-col rounded-2xl border border-white/10 bg-surface-100/95 p-6 shadow-2xl backdrop-blur-2xl text-zinc-100",
               widths[maxWidth]
             )}
           >
             {/* Header */}
-            <div className="flex items-start justify-between pb-4 border-b border-white/5">
+            <div className="flex items-start justify-between pb-4 border-b border-white/5 shrink-0">
               <div>
                 {title && <h3 className="text-lg font-semibold text-zinc-100">{title}</h3>}
                 {description && <p className="mt-1 text-xs text-zinc-400">{description}</p>}
@@ -89,7 +89,7 @@ export function Modal({
             </div>
 
             {/* Content Body */}
-            <div className="mt-4">{children}</div>
+            <div className="mt-4 overflow-y-auto pr-1 flex-1">{children}</div>
           </motion.div>
         </div>
       )}

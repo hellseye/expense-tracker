@@ -13,7 +13,7 @@
     "typecheck:server": "cd server && npx tsc --noEmit",
     "test:api": "node client/src/server/tests/verify-api.js",
     "prisma:generate": "cd client && npx prisma generate && cd ../server && npx prisma generate",
-    "prisma:push": "cd server && npx prisma db push",
-    "db:seed": "cd server && npm run db:seed"
+    "prisma:push": "cd client && npx prisma db push",
+    "db:seed": "cd client && npm run db:seed"
   }
 }

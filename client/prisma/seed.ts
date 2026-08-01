@@ -8,15 +8,16 @@ async function main() {
   // 1. Seed User
   const user = await prisma.user.upsert({
     where: { email: "mayank@ledger.dev" },
-    update: {},
+    update: {
+      passwordHash: "$2b$10$se0HYTKnfyax4ODqgEopJOTUsPJciujIlm2hh8JNhGeAvJxUDQzA.",
+    },
     create: {
       name: "Mayank",
       email: "mayank@ledger.dev",
       emailVerified: true,
       currency: "INR",
       theme: "dark",
-      // Seed a hashed password helper or leave empty for OAuth demo
-      passwordHash: "$2b$10$wK68XwD57pQ/j/jJm7qG9Oq8T6lZ54Z/O7y.V9h2p1m9zF8z/J2rG", // dummy bcrypt for "password123"
+      passwordHash: "$2b$10$se0HYTKnfyax4ODqgEopJOTUsPJciujIlm2hh8JNhGeAvJxUDQzA.", // bcrypt hash for "password123"
     },
   });
 

@@ -2,7 +2,24 @@
 
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Tags, Trash2, Edit2, Check } from "lucide-react";
+import {
+  Plus,
+  Tags,
+  Trash2,
+  Edit2,
+  Check,
+  ShoppingBag,
+  Utensils,
+  Car,
+  Zap,
+  Film,
+  HeartPulse,
+  GraduationCap,
+  Laptop,
+  Gift,
+  PiggyBank,
+  Briefcase,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,6 +40,21 @@ const COLOR_PALETTE = [
   "#EC4899", // Pink
 ];
 
+const ICON_OPTIONS = [
+  { name: "tag", icon: Tags },
+  { name: "shopping", icon: ShoppingBag },
+  { name: "food", icon: Utensils },
+  { name: "transport", icon: Car },
+  { name: "bills", icon: Zap },
+  { name: "entertainment", icon: Film },
+  { name: "health", icon: HeartPulse },
+  { name: "education", icon: GraduationCap },
+  { name: "tech", icon: Laptop },
+  { name: "gift", icon: Gift },
+  { name: "savings", icon: PiggyBank },
+  { name: "work", icon: Briefcase },
+];
+
 export function CategoriesView() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -33,6 +65,7 @@ export function CategoriesView() {
   // Form State
   const [name, setName] = React.useState("");
   const [selectedColor, setSelectedColor] = React.useState(COLOR_PALETTE[0]);
+  const [selectedIcon, setSelectedIcon] = React.useState(ICON_OPTIONS[0].name);
 
   // Delete modal state
   const [catToDelete, setCatToDelete] = React.useState<string | null>(null);
@@ -50,9 +83,11 @@ export function CategoriesView() {
     if (editingCategory) {
       setName(editingCategory.name);
       setSelectedColor(editingCategory.color);
+      setSelectedIcon(editingCategory.icon || "tag");
     } else {
       setName("");
       setSelectedColor(COLOR_PALETTE[0]);
+      setSelectedIcon(ICON_OPTIONS[0].name);
     }
   }, [editingCategory]);
 
@@ -61,8 +96,8 @@ export function CategoriesView() {
     mutationFn: async () => {
       const endpoint = editingCategory ? `/categories/${editingCategory.id}` : "/categories";
       const res = editingCategory
-        ? await ApiClient.patch<ApiResponse<Category>>(endpoint, { name, color: selectedColor })
-        : await ApiClient.post<ApiResponse<Category>>(endpoint, { name, color: selectedColor });
+        ? await ApiClient.patch<ApiResponse<Category>>(endpoint, { name, color: selectedColor, icon: selectedIcon })
+        : await ApiClient.post<ApiResponse<Category>>(endpoint, { name, color: selectedColor, icon: selectedIcon });
 
       if (!res.success) throw new Error(res.error || "Failed to save category");
       return res.data;
@@ -71,7 +106,7 @@ export function CategoriesView() {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
       toast({
         type: "success",
-        title: editingCategory ? "Category renamed" : "Category created",
+        title: editingCategory ? "Category updated" : "Category created",
         description: `Successfully saved ${name}`,
       });
       setIsModalOpen(false);
@@ -219,6 +254,30 @@ export function CategoriesView() {
                   {selectedColor === c && <Check className="h-4 w-4 text-white drop-shadow" />}
                 </button>
               ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-zinc-400 mb-2">Category Icon</label>
+            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 max-h-[140px] overflow-y-auto pr-1">
+              {ICON_OPTIONS.map((opt) => {
+                const Icon = opt.icon;
+                const isSelected = selectedIcon === opt.name;
+                return (
+                  <button
+                    key={opt.name}
+                    type="button"
+                    onClick={() => setSelectedIcon(opt.name)}
+                    className={`flex h-10 w-full items-center justify-center rounded-xl border transition-all ${
+                      isSelected
+                        ? "border-primary bg-primary/20 text-primary shadow-glow-sm scale-105"
+                        : "border-white/5 bg-surface-200/50 text-zinc-400 hover:text-zinc-200 hover:border-white/10"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </button>
+                );
+              })}
             </div>
           </div>
 

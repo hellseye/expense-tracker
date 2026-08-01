@@ -17,11 +17,13 @@ export class AuthService {
 
   static async validateUser(input: LoginInput) {
     const user = await AuthRepository.findUserByEmail(input.email);
+    
     if (!user || !user.passwordHash) {
       throw new Error("Invalid email or password");
     }
 
     const isValid = await bcryptjs.compare(input.password, user.passwordHash);
+    
     if (!isValid) {
       throw new Error("Invalid email or password");
     }

@@ -41,6 +41,7 @@ export class AuthController {
 
       return response;
     } catch (error: any) {
+      console.error("AuthController.login error:", error.message || error);
       if (error.name === "ZodError") {
         return NextResponse.json(
           {

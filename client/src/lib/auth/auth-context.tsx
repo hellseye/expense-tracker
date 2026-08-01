@@ -2,107 +2,106 @@
 
 import * as React from "react";
 import { UserProfile } from "@/types";
-import { appConfig } from "../config/app-config";
 
 interface AuthContextType {
   user: UserProfile | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  token: string | null;
-  // Connection slots for external auth integration
   login: (email: string, password?: string) => Promise<void>;
   loginWithGoogle: () => Promise<void>;
+  registerUser: (name: string, email: string, password?: string) => Promise<void>;
   logout: () => Promise<void>;
-  setAuthToken: (token: string) => void;
 }
 
-const DEFAULT_USER: UserProfile = {
-  id: "usr_demo_mayank",
-  name: "Mayank",
-  email: "mayank@ledger.dev",
-  currency: appConfig.defaultCurrency,
-  theme: "dark",
-};
-
-const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = React.createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = React.useState<UserProfile | null>(DEFAULT_USER);
-  const [token, setToken] = React.useState<string | null>(null);
-  const [isLoading, setIsLoading] = React.useState(false);
+  const [user, setUser] = React.useState<UserProfile | null>(null);
+  const [isLoading, setIsLoading] = React.useState(true);
 
+  // Restore user session on initial load
   React.useEffect(() => {
-    // Check local storage for plugged-in external JWT auth token
-    const storedToken = localStorage.getItem(appConfig.auth.tokenStorageKey);
-    const storedUser = localStorage.getItem(appConfig.auth.userStorageKey);
-
-    if (storedToken) setToken(storedToken);
-    if (storedUser) {
+    async function checkSession() {
       try {
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        setUser(DEFAULT_USER);
+        const res = await fetch("/api/auth/session");
+        const json = await res.json();
+        if (json.success && json.data?.user) {
+          setUser(json.data.user);
+        } else {
+          setUser(null);
+        }
+      } catch {
+        setUser(null);
+      } finally {
+        setIsLoading(false);
       }
     }
+    checkSession();
   }, []);
 
-  /**
-   * PLUGGABLE BACKEND CONNECTION SLOT: Login Credentials
-   * Hook your custom backend auth endpoint here (e.g. POST /api/v1/auth/login)
-   */
   const login = React.useCallback(async (email: string, password?: string) => {
     setIsLoading(true);
     try {
-      if (appConfig.backendMode === "REMOTE_HTTP") {
-        const res = await fetch(`${appConfig.apiBaseUrl}/auth/login`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-        const json = await res.json();
-        if (json.token) {
-          localStorage.setItem(appConfig.auth.tokenStorageKey, json.token);
-          localStorage.setItem(appConfig.auth.userStorageKey, JSON.stringify(json.user));
-          setToken(json.token);
-          setUser(json.user);
-          return;
-        }
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const json = await res.json();
+      if (!json.success) {
+        throw new Error(json.message || "Invalid credentials");
       }
-
-      // Default demo session fallback
-      const demoUser = { ...DEFAULT_USER, email };
-      setUser(demoUser);
-      localStorage.setItem(appConfig.auth.userStorageKey, JSON.stringify(demoUser));
+      setUser(json.data.user);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
-  /**
-   * PLUGGABLE BACKEND CONNECTION SLOT: Google OAuth SSO
-   * Hook your OAuth provider redirect here (e.g. Supabase, NextAuth, Better Auth)
-   */
   const loginWithGoogle = React.useCallback(async () => {
-    if (appConfig.backendMode === "REMOTE_HTTP") {
-      window.location.href = `${appConfig.apiBaseUrl}/auth/google`;
-      return;
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/auth/google", { 
+        method: "GET",
+        redirect: "manual"
+      });
+      
+      if (res.status === 400) {
+        const json = await res.json().catch(() => ({}));
+        throw new Error(json.message || "Google OAuth is not configured. Please check your client/.env file.");
+      }
+      
+      window.location.href = "/api/auth/google";
+    } finally {
+      setIsLoading(false);
     }
-    setUser(DEFAULT_USER);
   }, []);
 
-  /**
-   * PLUGGABLE BACKEND CONNECTION SLOT: Logout & Revoke Session
-   */
+  const registerUser = React.useCallback(async (name: string, email: string, password?: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, currency: "INR" }),
+      });
+      const json = await res.json();
+      if (!json.success) {
+        throw new Error(json.message || "Registration failed");
+      }
+      await login(email, password);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [login]);
+
   const logout = React.useCallback(async () => {
-    localStorage.removeItem(appConfig.auth.tokenStorageKey);
-    localStorage.removeItem(appConfig.auth.userStorageKey);
-    setToken(null);
-    setUser(null);
-  }, []);
-
-  const setAuthToken = React.useCallback((newToken: string) => {
-    localStorage.setItem(appConfig.auth.tokenStorageKey, newToken);
-    setToken(newToken);
+    setIsLoading(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
   return (
@@ -111,11 +110,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         isAuthenticated: Boolean(user),
         isLoading,
-        token,
         login,
         loginWithGoogle,
+        registerUser,
         logout,
-        setAuthToken,
       }}
     >
       {children}

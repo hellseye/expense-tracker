@@ -5,6 +5,8 @@ import { Plus, Search, Menu } from "lucide-react";
 import { getTimeGreeting } from "@/lib/utils";
 import { Button } from "../ui/button";
 
+import { useAuth } from "@/lib/auth/auth-context";
+
 interface NavbarProps {
   onOpenQuickAdd: () => void;
   onOpenSearch?: () => void;
@@ -12,7 +14,9 @@ interface NavbarProps {
 }
 
 export function Navbar({ onOpenQuickAdd, onOpenSearch, onOpenMobileMenu }: NavbarProps) {
-  const greeting = getTimeGreeting("Mayank");
+  const { user } = useAuth();
+  const userName = user?.name || "Guest";
+  const greeting = getTimeGreeting(userName);
   const todayDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     month: "short",

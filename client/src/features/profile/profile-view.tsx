@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { User, Mail, Shield, Key, LogOut } from "lucide-react";
+import { User, Mail, Shield, Key, LogOut, Globe, Download, FileSpreadsheet } from "lucide-react";
 import { useAuth } from "@/lib/auth/auth-context";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,7 @@ export function ProfileView() {
   // Form states for profile info
   const [name, setName] = React.useState("");
   const [email, setEmail] = React.useState("");
+  const [currency, setCurrency] = React.useState("INR");
 
   // Form states for password changes
   const [oldPassword, setOldPassword] = React.useState("");
@@ -49,19 +50,20 @@ export function ProfileView() {
     if (profile) {
       setName(profile.name || "");
       setEmail(profile.email || "");
+      setCurrency(profile.currency || "INR");
     }
   }, [profile]);
 
   // Profile Save Mutation
   const saveProfileMutation = useMutation({
-    mutationFn: (data: { name: string; email: string }) =>
+    mutationFn: (data: { name: string; email: string; currency: string }) =>
       ApiClient.patch<ApiResponse<any>>("/user/profile", data),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ["userProfile"] });
       toast({
         type: "success",
         title: "Profile saved",
-        description: "Your user details have been updated successfully.",
+        description: "Your user details and currency preference updated.",
       });
     },
     onError: (error: any) => {
@@ -102,7 +104,7 @@ export function ProfileView() {
       toast({ type: "error", title: "Validation Error", description: "Name and email are required." });
       return;
     }
-    saveProfileMutation.mutate({ name, email });
+    saveProfileMutation.mutate({ name, email, currency });
   };
 
   const handleSavePassword = (e: React.FormEvent) => {
@@ -122,6 +124,21 @@ export function ProfileView() {
     changePasswordMutation.mutate({ oldPassword, newPassword });
   };
 
+  const handleExportDataJSON = () => {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(profile, null, 2));
+    const downloadAnchor = document.createElement("a");
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", `ledger-profile-${profile?.id || "user"}.json`);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    toast({
+      type: "success",
+      title: "Data Exported",
+      description: "Downloaded complete profile data JSON.",
+    });
+  };
+
   if (isLoading) {
     return <div className="text-zinc-400 text-sm">Loading profile settings...</div>;
   }
@@ -139,7 +156,7 @@ export function ProfileView() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-white/5">
             <div className="flex items-center gap-4">
               <div className="h-16 w-16 rounded-full bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center text-xl font-bold text-white shadow-glow">
-                {name.charAt(0).toUpperCase() || "M"}
+                {name.charAt(0).toUpperCase() || "U"}
               </div>
 
               <div>
@@ -180,12 +197,51 @@ export function ProfileView() {
               />
             </div>
 
+            <div>
+              <label className="block text-xs font-semibold text-zinc-400 mb-1">Preferred Currency</label>
+              <div className="relative">
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="flex h-11 w-full rounded-xl border border-white/10 bg-surface-200/80 px-3.5 pl-10 text-sm text-zinc-100 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                >
+                  <option value="INR">INR (₹) - Indian Rupee</option>
+                  <option value="USD">USD ($) - US Dollar</option>
+                  <option value="EUR">EUR (€) - Euro</option>
+                  <option value="GBP">GBP (£) - British Pound</option>
+                </select>
+                <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400 pointer-events-none" />
+              </div>
+            </div>
+
             <div className="pt-4 flex justify-end">
               <Button type="submit" isLoading={saveProfileMutation.isPending}>
-                Save Profile
+                Save Profile Preferences
               </Button>
             </div>
           </form>
+        </Card>
+
+        {/* Export Data Card */}
+        <Card className="p-6 space-y-4">
+          <h3 className="text-base font-bold text-zinc-100 tracking-tight flex items-center gap-2">
+            <Download className="h-4 w-4 text-primary" />
+            <span>Account Data & Backup</span>
+          </h3>
+          <p className="text-xs text-zinc-400">Export your user profile information or ledger data.</p>
+
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <Button variant="outline" onClick={handleExportDataJSON} className="flex items-center gap-2">
+              <Download className="h-4 w-4 text-zinc-300" />
+              <span>Export Profile JSON</span>
+            </Button>
+            <a href="/api/expenses/export" download>
+              <Button variant="secondary" className="flex items-center gap-2">
+                <FileSpreadsheet className="h-4 w-4 text-primary" />
+                <span>Download Expenses CSV</span>
+              </Button>
+            </a>
+          </div>
         </Card>
 
         {/* Change Password Card */}
