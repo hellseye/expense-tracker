@@ -212,7 +212,7 @@ export function ProfileView() {
                 <select
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value)}
-                  className="flex h-11 w-full rounded-xl border border-white/10 bg-surface-200/80 px-3.5 pl-10 text-sm text-zinc-100 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  className="flex h-11 w-full rounded-xl border border-border bg-surface-200/80 px-3.5 pl-10 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
                 >
                   <option value="INR">INR (₹) - Indian Rupee</option>
                   <option value="USD">USD ($) - US Dollar</option>

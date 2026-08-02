@@ -184,11 +184,11 @@ export function TransactionsView({ onOpenQuickAdd, onEditExpense }: Transactions
               setSelectedCategory(e.target.value);
               setPage(1);
             }}
-            className="h-11 rounded-xl border border-white/10 bg-surface-200/80 px-3 text-xs font-medium text-zinc-200 focus:border-primary focus:outline-none"
+            className="h-11 rounded-xl border border-border bg-surface-200/80 px-3 text-xs font-medium text-foreground focus:border-primary focus:outline-none"
           >
             <option value="ALL">All Categories</option>
             {categories.map((c) => (
-              <option key={c.id} value={c.id} className="bg-surface-100 text-zinc-100">
+              <option key={c.id} value={c.id} className="bg-surface-100 text-foreground">
                 {c.name}
               </option>
             ))}
@@ -201,7 +201,7 @@ export function TransactionsView({ onOpenQuickAdd, onEditExpense }: Transactions
               setSelectedPayment(e.target.value);
               setPage(1);
             }}
-            className="h-11 rounded-xl border border-white/10 bg-surface-200/80 px-3 text-xs font-medium text-zinc-200 focus:border-primary focus:outline-none"
+            className="h-11 rounded-xl border border-border bg-surface-200/80 px-3 text-xs font-medium text-foreground focus:border-primary focus:outline-none"
           >
             <option value="ALL">All Payment Methods</option>
             <option value="CREDIT_CARD" className="bg-surface-100 text-zinc-100">Credit Card</option>

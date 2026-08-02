@@ -316,7 +316,7 @@ export function QuickAddModal({ isOpen, onClose, expenseToEdit }: QuickAddModalP
                   placeholder="Category Name (e.g. Travel, Gym)"
                   value={newCatName}
                   onChange={(e) => setNewCatName(e.target.value)}
-                  className="flex h-9 w-full rounded-lg border border-white/10 bg-black px-3 text-xs text-zinc-100 placeholder:text-zinc-500 focus:border-primary focus:outline-none"
+                  className="flex h-9 w-full rounded-lg border border-border bg-surface-100 px-3 text-xs text-foreground placeholder:text-zinc-500 focus:border-primary focus:outline-none"
                 />
                 <Button
                   type="button"
@@ -430,7 +430,7 @@ export function QuickAddModal({ isOpen, onClose, expenseToEdit }: QuickAddModalP
               type="text"
               placeholder="e.g. Invoice details, shared splits"
               {...register("notes")}
-              className="flex h-11 w-full rounded-xl border border-white/10 bg-surface-200/80 px-3.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="flex h-11 w-full rounded-xl border border-border bg-surface-200/80 px-3.5 text-sm text-foreground placeholder:text-zinc-500 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
         </div>

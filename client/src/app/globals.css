@@ -76,3 +76,19 @@
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary);
 }
+
+/* Prevent white-on-white text during browser autofill and select dropdown options */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: var(--foreground) !important;
+  box-shadow: 0 0 0px 1000px var(--surface-200) inset !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
+option {
+  background-color: var(--surface-100);
+  color: var(--foreground);
+}
