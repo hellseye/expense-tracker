@@ -92,3 +92,19 @@ option {
   background-color: var(--surface-100);
   color: var(--foreground);
 }
+
+/* Explicit Input & Select styling across all modes */
+input, select, textarea {
+  background-color: var(--surface-200) !important;
+  color: var(--foreground) !important;
+  border-color: var(--border) !important;
+}
+
+/* Fix date picker icons & calendar picker contrast */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.8);
+  cursor: pointer;
+}
+.light input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: none;
+}

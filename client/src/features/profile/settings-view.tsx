@@ -53,7 +53,11 @@ export function SettingsView() {
   React.useEffect(() => {
     if (typeof window !== "undefined") {
       const savedAccent = localStorage.getItem("ledger_accent_color");
+      const savedSecondary = localStorage.getItem("ledger_secondary_color");
+      const savedIsGradient = localStorage.getItem("ledger_is_gradient");
       if (savedAccent) setAccentColor(savedAccent);
+      if (savedSecondary) setColor2(savedSecondary);
+      if (savedIsGradient !== null) setIsGradient(savedIsGradient === "true");
     }
   }, []);
 

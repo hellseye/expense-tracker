@@ -20,6 +20,7 @@ import {
   PiggyBank,
   Briefcase,
 } from "lucide-react";
+import { getCategoryIcon } from "@/utils/category-icon";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -171,19 +172,21 @@ export function CategoriesView() {
         <Card className="p-8 text-center text-zinc-400">Loading categories...</Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categories.map((cat) => (
-            <Card key={cat.id} hoverable className="relative group">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10"
-                    style={{
-                      backgroundColor: `${cat.color}18`,
-                      borderColor: `${cat.color}30`,
-                    }}
-                  >
-                    <Tags className="h-5 w-5" style={{ color: cat.color }} />
-                  </div>
+          {categories.map((cat) => {
+            const CatIcon = getCategoryIcon(cat.icon || cat.name);
+            return (
+              <Card key={cat.id} hoverable className="relative group">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10"
+                      style={{
+                        backgroundColor: `${cat.color}18`,
+                        borderColor: `${cat.color}30`,
+                      }}
+                    >
+                      <CatIcon className="h-5 w-5" style={{ color: cat.color }} />
+                    </div>
 
                   <div>
                     <h3 className="text-base font-bold text-zinc-100 group-hover:text-primary transition-colors">
@@ -219,7 +222,8 @@ export function CategoriesView() {
                 <Badge color={cat.color}>{cat.color}</Badge>
               </div>
             </Card>
-          ))}
+          );
+        })}
         </div>
       )}
 
