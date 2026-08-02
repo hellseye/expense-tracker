@@ -6,6 +6,7 @@ import { Sparkles } from "lucide-react";
 import { StatCards } from "./stat-cards";
 import { SpendingChart } from "./spending-chart";
 import { RecentTransactions } from "./recent-transactions";
+import { FinancialOverviewModal } from "./financial-overview-modal";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { ApiClient } from "@/lib/api/api-client";
@@ -20,6 +21,7 @@ export function DashboardView({ onOpenQuickAdd, onEditExpense }: DashboardViewPr
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isGenerating, setIsGenerating] = React.useState(false);
+  const [isOverviewModalOpen, setIsOverviewModalOpen] = React.useState(false);
 
   // Fetch Analytics & Recent Expenses via ApiClient
   const { data: analyticsRes, isLoading: isAnalyticsLoading } = useQuery<ApiResponse<AnalyticsSummary>>({
@@ -42,12 +44,13 @@ export function DashboardView({ onOpenQuickAdd, onEditExpense }: DashboardViewPr
     queryClient.invalidateQueries({ queryKey: ["expenses"] });
     setTimeout(() => {
       setIsGenerating(false);
+      setIsOverviewModalOpen(true);
       toast({
         type: "success",
         title: "Financial Overview Generated",
-        description: "Updated balance metrics and spending insights.",
+        description: "AI audit complete. Executive financial insights ready.",
       });
-    }, 600);
+    }, 500);
   };
 
   // Delete Mutation via ApiClient
@@ -97,6 +100,14 @@ export function DashboardView({ onOpenQuickAdd, onEditExpense }: DashboardViewPr
           onDeleteExpense={(id) => deleteMutation.mutate(id)}
         />
       </div>
+
+      {/* Financial Overview Executive Report Modal */}
+      <FinancialOverviewModal
+        isOpen={isOverviewModalOpen}
+        onClose={() => setIsOverviewModalOpen(false)}
+        analytics={analytics}
+        expenses={recentExpenses}
+      />
     </div>
   );
 }
