@@ -181,6 +181,30 @@ export function SettingsView() {
     }
   };
 
+  const sendBugReportMutation = useMutation({
+    mutationFn: async (data: { issueType: string; description: string }) => {
+      const res = await ApiClient.post<ApiResponse<any>>("/support/bug-report", data);
+      if (!res.success) throw new Error(res.error || "Failed to send bug report");
+      return res;
+    },
+    onSuccess: (_, variables) => {
+      toast({
+        type: "success",
+        title: "Bug Report Sent",
+        description: `Direct email sent with subject: "Ledger issue :- ${variables.issueType}"`,
+      });
+      setIsBugModalOpen(false);
+      setIssueDescription("");
+    },
+    onError: (err: any) => {
+      toast({
+        type: "error",
+        title: "Submission failed",
+        description: err.message || "Failed to dispatch bug report.",
+      });
+    },
+  });
+
   const handleSendBugReport = (e: React.FormEvent) => {
     e.preventDefault();
     if (!issueDescription.trim()) {
@@ -191,31 +215,10 @@ export function SettingsView() {
       });
     }
 
-    const subject = issueType;
-    const body = `User Email: ${profile?.email || "N/A"}
-User Name: ${profile?.name || "N/A"}
-Issue Category: ${issueType}
-
-Issue Description:
-${issueDescription}
-
-System Info:
-- App Version: Ledger v1.5.0 (Tahoe Release)
-- Theme: ${theme}
-- Browser Info: ${typeof navigator !== "undefined" ? navigator.userAgent : "N/A"}
-`;
-
-    const mailtoUrl = `mailto:mayankdhanuka899@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-    window.open(mailtoUrl, "_blank");
-
-    toast({
-      type: "success",
-      title: "Bug Report Prepared",
-      description: `Opening email client with subject "${subject}"`,
+    sendBugReportMutation.mutate({
+      issueType,
+      description: issueDescription,
     });
-
-    setIsBugModalOpen(false);
-    setIssueDescription("");
   };
 
   if (isLoading) {
@@ -683,7 +686,7 @@ System Info:
             <Button type="button" variant="ghost" onClick={() => setIsBugModalOpen(false)}>
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" isLoading={sendBugReportMutation.isPending}>
               <Send className="h-4 w-4" />
               <span>Send Bug Report Email</span>
             </Button>
