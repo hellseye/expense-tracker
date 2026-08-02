@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { Wallet, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { Wallet, Mail, Lock, User, ArrowRight, Check, X, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 import { useAuth } from "@/lib/auth/auth-context";
+import { isLegitEmail, evaluatePasswordStrength, registerSchema } from "@/validations/auth.validation";
 
 export function RegisterView() {
   const { registerUser } = useAuth();
@@ -18,6 +19,9 @@ export function RegisterView() {
   const [isLoading, setIsLoading] = React.useState(false);
   const { toast } = useToast();
 
+  const emailCheck = React.useMemo(() => isLegitEmail(email), [email]);
+  const pwdCheck = React.useMemo(() => evaluatePasswordStrength(password), [password]);
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -25,23 +29,23 @@ export function RegisterView() {
       return toast({
         type: "error",
         title: "Registration error",
-        description: "Please enter your name.",
+        description: "Please enter your full name.",
       });
     }
 
-    if (!email.trim()) {
+    if (!emailCheck.isValid) {
       return toast({
         type: "error",
-        title: "Registration error",
-        description: "Please enter your email address.",
+        title: "Invalid Email Address",
+        description: emailCheck.reason || "Please enter a valid email address.",
       });
     }
 
-    if (password.length < 6) {
+    if (pwdCheck.score < 3) {
       return toast({
         type: "error",
-        title: "Registration error",
-        description: "Password must be at least 6 characters long.",
+        title: "Weak Password",
+        description: "Please fulfill the password strength criteria (at least 8 chars, uppercase, number, and special symbol).",
       });
     }
 
@@ -103,7 +107,15 @@ export function RegisterView() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-400 mb-1">Email</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-zinc-400">Email Address</label>
+                {email && (
+                  <span className={`text-[11px] font-semibold flex items-center gap-1 ${emailCheck.isValid ? "text-emerald-400" : "text-accent-rose"}`}>
+                    {emailCheck.isValid ? <Check className="h-3 w-3" /> : <X className="h-3 w-3" />}
+                    <span>{emailCheck.isValid ? "Valid Email" : emailCheck.reason}</span>
+                  </span>
+                )}
+              </div>
               <Input
                 type="email"
                 placeholder="you@example.com"
@@ -114,14 +126,49 @@ export function RegisterView() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-400 mb-1">Password</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-zinc-400">Password</label>
+                {password && (
+                  <span className="text-[11px] font-bold" style={{ color: pwdCheck.color }}>
+                    Strength: {pwdCheck.label}
+                  </span>
+                )}
+              </div>
               <Input
                 type="password"
-                placeholder="Min. 6 characters"
+                placeholder="Min. 8 characters with A-Z, 0-9 & symbols"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 leftIcon={<Lock className="h-4 w-4 text-zinc-400" />}
               />
+
+              {/* Password Strength Progress Gauge */}
+              {password && (
+                <div className="mt-2 space-y-2">
+                  <div className="flex gap-1.5 h-1.5 w-full bg-surface-300 rounded-full overflow-hidden">
+                    <div className="h-full transition-all duration-300 rounded-full" style={{ width: "25%", backgroundColor: pwdCheck.score >= 1 ? pwdCheck.color : "transparent" }} />
+                    <div className="h-full transition-all duration-300 rounded-full" style={{ width: "25%", backgroundColor: pwdCheck.score >= 2 ? pwdCheck.color : "transparent" }} />
+                    <div className="h-full transition-all duration-300 rounded-full" style={{ width: "25%", backgroundColor: pwdCheck.score >= 3 ? pwdCheck.color : "transparent" }} />
+                    <div className="h-full transition-all duration-300 rounded-full" style={{ width: "25%", backgroundColor: pwdCheck.score >= 4 ? pwdCheck.color : "transparent" }} />
+                  </div>
+
+                  {/* Requirements Checklist */}
+                  <div className="grid grid-cols-2 gap-1 text-[11px] font-medium pt-1">
+                    <span className={pwdCheck.checks.length ? "text-emerald-400" : "text-zinc-500"}>
+                      {pwdCheck.checks.length ? "✓" : "○"} 8+ Characters
+                    </span>
+                    <span className={pwdCheck.checks.hasUpper ? "text-emerald-400" : "text-zinc-500"}>
+                      {pwdCheck.checks.hasUpper ? "✓" : "○"} 1 Uppercase (A-Z)
+                    </span>
+                    <span className={pwdCheck.checks.hasNumber ? "text-emerald-400" : "text-zinc-500"}>
+                      {pwdCheck.checks.hasNumber ? "✓" : "○"} 1 Number (0-9)
+                    </span>
+                    <span className={pwdCheck.checks.hasSpecial ? "text-emerald-400" : "text-zinc-500"}>
+                      {pwdCheck.checks.hasSpecial ? "✓" : "○"} 1 Symbol (!@#$)
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
