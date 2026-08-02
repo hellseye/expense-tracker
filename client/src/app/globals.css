@@ -108,3 +108,20 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 .light input[type="date"]::-webkit-calendar-picker-indicator {
   filter: none;
 }
+
+/* Dynamic Primary Accent & Gradient background utility */
+.bg-primary {
+  background: var(--primary-gradient, var(--primary)) !important;
+}
+
+.border-primary {
+  border-color: var(--primary) !important;
+}
+
+.text-primary {
+  color: var(--primary) !important;
+}
+
+.shadow-glow {
+  box-shadow: 0 0 20px var(--primary-glow) !important;
+}

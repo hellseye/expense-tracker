@@ -28,9 +28,9 @@ export function SidebarButton({
       className={cn(
         "relative flex h-12 w-12 items-center justify-center transition-all duration-200 cursor-pointer select-none",
         isAddButton
-          ? "rounded-2xl bg-primary text-white shadow-glow hover:bg-primary-hover hover:scale-105 active:scale-95"
+          ? "rounded-2xl bg-primary text-white shadow-glow hover:scale-105 active:scale-95"
           : active
-          ? "rounded-2xl bg-gradient-to-tr from-primary to-accent-purple text-white shadow-glow scale-105 border border-white/20"
+          ? "rounded-2xl bg-primary text-white shadow-glow scale-105 border border-white/20"
           : "rounded-xl text-zinc-400 hover:bg-white/10 hover:text-zinc-100 hover:scale-105 active:scale-95 hover:border hover:border-white/10"
       )}
     >

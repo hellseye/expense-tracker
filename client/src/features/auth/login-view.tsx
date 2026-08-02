@@ -74,7 +74,7 @@ export function LoginView() {
       <div className="w-full max-w-md space-y-6 relative z-10">
         {/* Brand Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary to-accent-purple shadow-glow mb-2">
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary shadow-glow mb-2">
             <Wallet className="h-6 w-6 text-white" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">Ledger</h1>
