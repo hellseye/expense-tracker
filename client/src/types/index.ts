@@ -32,6 +32,7 @@ export interface Expense {
   id: string;
   title: string;
   amount: number;
+  type?: "EXPENSE" | "INCOME";
   expenseDate: string;
   notes?: string | null;
   paymentMethod: PaymentMethod;

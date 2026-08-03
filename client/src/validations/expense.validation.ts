@@ -8,6 +8,7 @@ export const createExpenseSchema = z.object({
   paymentMethod: z.nativeEnum(PaymentMethod).default(PaymentMethod.CREDIT_CARD),
   categoryId: z.string().min(1, "Category is required"),
   notes: z.string().max(500).optional().nullable(),
+  type: z.enum(["EXPENSE", "INCOME"]).optional().default("EXPENSE"),
 });
 
 export const updateExpenseSchema = createExpenseSchema.partial();

@@ -27,6 +27,8 @@ import {
   Gift,
   PiggyBank,
   Briefcase,
+  TrendingDown,
+  TrendingUp,
 } from "lucide-react";
 import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
@@ -132,6 +134,7 @@ export function QuickAddModal({ isOpen, onClose, expenseToEdit }: QuickAddModalP
   } = useForm<any>({
     resolver: zodResolver(createExpenseSchema),
     defaultValues: {
+      type: "EXPENSE",
       title: "",
       amount: 0,
       categoryId: "",
@@ -141,6 +144,7 @@ export function QuickAddModal({ isOpen, onClose, expenseToEdit }: QuickAddModalP
     },
   });
 
+  const transactionType = watch("type") || "EXPENSE";
   const selectedCategoryId = watch("categoryId");
   const selectedPaymentMethod = watch("paymentMethod");
   const currentAmount = watch("amount") || 0;
@@ -163,6 +167,7 @@ export function QuickAddModal({ isOpen, onClose, expenseToEdit }: QuickAddModalP
 
     if (expenseToEdit) {
       reset({
+        type: expenseToEdit.type || "EXPENSE",
         title: expenseToEdit.title,
         amount: expenseToEdit.amount,
         categoryId: expenseToEdit.categoryId,
@@ -172,6 +177,7 @@ export function QuickAddModal({ isOpen, onClose, expenseToEdit }: QuickAddModalP
       });
     } else {
       reset({
+        type: "EXPENSE",
         title: "",
         amount: 0,
         categoryId: categories[0]?.id || "",
@@ -191,23 +197,24 @@ export function QuickAddModal({ isOpen, onClose, expenseToEdit }: QuickAddModalP
         ? await ApiClient.patch<ApiResponse<Expense>>(endpoint, data)
         : await ApiClient.post<ApiResponse<Expense>>(endpoint, data);
 
-      if (!res.success) throw new Error(res.error || "Failed to save expense");
+      if (!res.success) throw new Error(res.error || "Failed to save transaction");
       return res.data;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["expenses"] });
       queryClient.invalidateQueries({ queryKey: ["analytics"] });
+      const isIncome = variables.type === "INCOME";
       toast({
         type: "success",
-        title: isEditing ? "Expense updated" : "Expense recorded",
-        description: isEditing ? "Transaction successfully updated." : "New expense added to your ledger.",
+        title: isEditing ? "Transaction updated" : isIncome ? "Income recorded" : "Expense recorded",
+        description: isEditing ? "Transaction successfully updated." : isIncome ? "New income logged to your ledger." : "New expense added to your ledger.",
       });
       onClose();
     },
     onError: (err: any) => {
       toast({
         type: "error",
-        title: "Error saving expense",
+        title: "Error saving transaction",
         description: err.message,
       });
     },
@@ -230,15 +237,46 @@ export function QuickAddModal({ isOpen, onClose, expenseToEdit }: QuickAddModalP
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? "Edit Expense Details" : "Record New Expense"}
-      description="Enter transaction details below to update your ledger."
+      title={isEditing ? "Edit Transaction Details" : transactionType === "INCOME" ? "Record New Income" : "Record New Expense"}
+      description="Select transaction type and enter details below to update your ledger."
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {/* 2-Option Transaction Type Segmented Switch (Expense vs Income) */}
+        <div className="grid grid-cols-2 gap-2 p-1.5 rounded-2xl bg-surface-200/80 border border-white/5">
+          <button
+            type="button"
+            onClick={() => setValue("type", "EXPENSE")}
+            className={`py-2.5 px-4 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${
+              transactionType === "EXPENSE"
+                ? "bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-glow-sm"
+                : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+            }`}
+          >
+            <TrendingDown className="h-4 w-4 text-rose-400" />
+            <span>Expense (Money Out)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setValue("type", "INCOME")}
+            className={`py-2.5 px-4 rounded-xl text-xs font-extrabold flex items-center justify-center gap-2 transition-all ${
+              transactionType === "INCOME"
+                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-glow-sm"
+                : "text-zinc-400 hover:text-zinc-200 hover:bg-white/5"
+            }`}
+          >
+            <TrendingUp className="h-4 w-4 text-emerald-400" />
+            <span>Income (Money In)</span>
+          </button>
+        </div>
+
         {/* Centered Premium Calculator-style Amount Display */}
         <div className="flex flex-col items-center justify-center p-5 rounded-2xl bg-surface-200/50 border border-white/5 space-y-3">
-          <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Amount (₹)</label>
+          <label className="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+            {transactionType === "INCOME" ? "Income Amount (₹)" : "Expense Amount (₹)"}
+          </label>
           <div className="relative w-full max-w-[200px] flex items-center justify-center">
-            <span className="absolute left-0 text-3xl font-extrabold text-primary">₹</span>
+            <span className={`absolute left-0 text-3xl font-extrabold ${transactionType === "INCOME" ? "text-emerald-400" : "text-rose-400"}`}>₹</span>
             <input
               type="number"
               step="0.01"
@@ -287,7 +325,7 @@ export function QuickAddModal({ isOpen, onClose, expenseToEdit }: QuickAddModalP
             <span>Title / Description</span>
           </label>
           <Input
-            placeholder="e.g. Swiggy Lunch, Grocery Shopping"
+            placeholder={transactionType === "INCOME" ? "e.g. Monthly Salary, Freelance Payment, Dividend, Gift" : "e.g. Swiggy Lunch, Grocery Shopping, Petrol"}
             {...register("title")}
             error={errors.title?.message?.toString()}
           />
