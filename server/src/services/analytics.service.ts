@@ -13,8 +13,8 @@ export class AnalyticsService {
     // Total Expenses
     const totalExpenses = expenses.reduce((acc, curr) => acc + curr.amount, 0);
 
-    // Default Monthly Income for dashboard comparison (₹150,000 baseline)
-    const totalIncome = 150000.0;
+    // Default Monthly Income
+    const totalIncome = 0;
     const remainingBalance = Math.max(0, totalIncome - totalExpenses);
 
     // Today's spending

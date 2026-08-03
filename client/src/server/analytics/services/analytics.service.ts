@@ -141,17 +141,16 @@ export class AnalyticsService {
     const topCategories = categoryBreakdown.slice(0, 3);
 
     // 9. Calculate totalIncome, remainingBalance, todaySpending, healthScore
-    const totalIncome = 120000; // Baseline allocation
+    const totalIncome = 0;
     const remainingBalance = Math.max(0, totalIncome - totalExpenses);
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todaySpending = expenses
       .filter((e) => new Date(e.expenseDate) >= startOfToday)
       .reduce((acc, curr) => acc + Number(curr.amount), 0);
 
-    const budgetHealthScore = Math.max(
-      10,
-      Math.min(100, Math.round(100 - (currentMonthExpenses / totalIncome) * 100))
-    );
+    const budgetHealthScore = totalIncome > 0
+      ? Math.max(10, Math.min(100, Math.round(100 - (currentMonthExpenses / totalIncome) * 100)))
+      : 100;
 
     return {
       totalExpenses,
