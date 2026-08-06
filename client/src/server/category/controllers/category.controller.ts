@@ -1,24 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { CategoryService } from "../services/category.service";
 import { createCategorySchema, updateCategorySchema } from "@/validations/category.validation";
-import { JwtUtils } from "@/utils/jwt";
+import { getAuthenticatedUser } from "@/lib/auth/get-authenticated-user";
 
 export class CategoryController {
-  private static getUserId(req: NextRequest): string {
-    const token = req.cookies.get("ledger_session")?.value;
-    if (!token) {
-      throw new Error("Unauthorized session access");
-    }
-    const payload = JwtUtils.verify(token);
-    if (!payload) {
-      throw new Error("Unauthorized session access");
-    }
-    return payload.userId;
+  private static async getUserId(req: NextRequest): Promise<string> {
+    const user = await getAuthenticatedUser(req);
+    return user.userId;
   }
 
   static async list(req: NextRequest) {
     try {
-      const userId = this.getUserId(req);
+      const userId = await this.getUserId(req);
       const categories = await CategoryService.listCategories(userId);
 
       return NextResponse.json({
@@ -35,7 +28,7 @@ export class CategoryController {
 
   static async create(req: NextRequest) {
     try {
-      const userId = this.getUserId(req);
+      const userId = await this.getUserId(req);
       const body = await req.json();
       const validatedInput = createCategorySchema.parse(body);
 
@@ -68,7 +61,7 @@ export class CategoryController {
 
   static async update(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
-      const userId = this.getUserId(req);
+      const userId = await this.getUserId(req);
       const { id } = await params;
       const body = await req.json();
       const validatedInput = updateCategorySchema.parse(body);
@@ -102,7 +95,7 @@ export class CategoryController {
 
   static async delete(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
-      const userId = this.getUserId(req);
+      const userId = await this.getUserId(req);
       const { id } = await params;
       await CategoryService.deleteCategory(id, userId);
 

@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { JwtUtils } from "@/utils/jwt";
+import { getAuthenticatedUser } from "@/lib/auth/get-authenticated-user";
 
 export async function POST(req: NextRequest) {
   try {
-    const token = req.cookies.get("ledger_session")?.value;
-    const session = token ? JwtUtils.verify(token) : null;
+    const session = await getAuthenticatedUser(req).catch(() => null);
 
     const body = await req.json();
     const { issueType, description } = body;

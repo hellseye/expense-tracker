@@ -77,3 +77,18 @@ export const registerSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RegisterInput = z.infer<typeof registerSchema>;
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, "Current password is required"),
+  newPassword: z
+    .string()
+    .min(8, "New password must be at least 8 characters long")
+    .refine((val) => /[A-Z]/.test(val), { message: "New password must contain at least one uppercase letter (A-Z)" })
+    .refine((val) => /[0-9]/.test(val), { message: "New password must contain at least one number (0-9)" })
+    .refine((val) => /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(val), {
+      message: "New password must contain at least one special character (!@#$)",
+    }),
+});
+
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+

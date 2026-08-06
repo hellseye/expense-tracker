@@ -65,28 +65,28 @@ async function runTests() {
 
     // 1. Test User Registration
     console.log("\n➡️  1. Testing User Registration...");
-    const regRes = await request("POST", "/api/auth/register", {
+    const regRes = await request("POST", "/api/v1/auth/register", {
       name: "Verification User",
       email: testEmail,
-      password: "testpassword123",
+      password: "TestPassword123!",
       currency: "INR",
     });
-    console.log(`Status: ${regRes.status} | Success: ${regRes.data?.success || false} | Message: ${regRes.data?.message || "None"}`);
+    console.log(`Status: ${regRes.status} | User Email: ${regRes.data?.user?.email || "None"} | Message: ${regRes.data?.message || "None"}`);
     if (regRes.status !== 201) throw new Error(`Registration failed: ${regRes.data?.message || "Unknown error"}`);
 
     // 2. Test User Login
     console.log("\n➡️  2. Testing User Login...");
-    const loginRes = await request("POST", "/api/auth/login", {
+    const loginRes = await request("POST", "/api/v1/auth/login", {
       email: testEmail,
-      password: "testpassword123",
+      password: "TestPassword123!",
     });
-    console.log(`Status: ${loginRes.status} | Cookie captured: ${Boolean(sessionCookie)}`);
+    console.log(`Status: ${loginRes.status} | Cookie captured: ${Boolean(sessionCookie)} | Device: ${loginRes.data?.session?.device?.name}`);
     if (loginRes.status !== 200) throw new Error("Login failed");
 
     // 3. Test Session Endpoint
     console.log("\n➡️  3. Testing Active Session retrieval...");
-    const sessionRes = await request("GET", "/api/auth/session");
-    console.log(`Status: ${sessionRes.status} | Authenticated Email: ${sessionRes.data.data?.user?.email}`);
+    const sessionRes = await request("GET", "/api/v1/auth/session");
+    console.log(`Status: ${sessionRes.status} | Authenticated Email: ${sessionRes.data?.user?.email}`);
     if (sessionRes.status !== 200) throw new Error("Session fetch failed");
 
     // 4. Test Create Category

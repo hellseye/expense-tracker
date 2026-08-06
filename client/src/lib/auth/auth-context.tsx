@@ -23,15 +23,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     async function checkSession() {
       try {
-        const res = await fetch("/api/auth/session");
+        const res = await fetch("/api/v1/auth/session");
         const json = await res.json();
-        if (json.success && json.data?.user) {
-          setUser(json.data.user);
+        const userData = json.user || json.data?.user;
+        if (userData) {
+          setUser(userData);
+          if (json.accessToken) {
+            localStorage.setItem("auth_token", json.accessToken);
+          }
         } else {
           setUser(null);
+          localStorage.removeItem("auth_token");
         }
       } catch {
         setUser(null);
+        localStorage.removeItem("auth_token");
       } finally {
         setIsLoading(false);
       }
@@ -42,16 +48,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = React.useCallback(async (email: string, password?: string) => {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch("/api/v1/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
       const json = await res.json();
-      if (!json.success) {
+      const userData = json.user || json.data?.user;
+      if (!res.ok || !userData) {
         throw new Error(json.message || "Invalid credentials");
       }
-      setUser(json.data.user);
+      if (json.accessToken) {
+        localStorage.setItem("auth_token", json.accessToken);
+      }
+      setUser(userData);
     } finally {
       setIsLoading(false);
     }
@@ -79,25 +89,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const registerUser = React.useCallback(async (name: string, email: string, password?: string) => {
     setIsLoading(true);
     try {
-      const res = await fetch("/api/auth/register", {
+      const res = await fetch("/api/v1/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, password, currency: "INR" }),
       });
       const json = await res.json();
-      if (!json.success) {
+      const userData = json.user || json.data?.user;
+      if (!res.ok || !userData) {
         throw new Error(json.message || "Registration failed");
       }
-      await login(email, password);
+      if (json.accessToken) {
+        localStorage.setItem("auth_token", json.accessToken);
+      }
+      setUser(userData);
     } finally {
       setIsLoading(false);
     }
-  }, [login]);
+  }, []);
 
   const logout = React.useCallback(async () => {
     setIsLoading(true);
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await fetch("/api/v1/auth/logout", { method: "POST" });
+      localStorage.removeItem("auth_token");
       setUser(null);
     } finally {
       setIsLoading(false);

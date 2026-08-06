@@ -1,23 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { AnalyticsService } from "../services/analytics.service";
-import { JwtUtils } from "@/utils/jwt";
+import { getAuthenticatedUser } from "@/lib/auth/get-authenticated-user";
 
 export class AnalyticsController {
-  private static getUserId(req: NextRequest): string {
-    const token = req.cookies.get("ledger_session")?.value;
-    if (!token) {
-      throw new Error("Unauthorized session access");
-    }
-    const payload = JwtUtils.verify(token);
-    if (!payload) {
-      throw new Error("Unauthorized session access");
-    }
-    return payload.userId;
+  private static async getUserId(req: NextRequest): Promise<string> {
+    const user = await getAuthenticatedUser(req);
+    return user.userId;
   }
 
   static async get(req: NextRequest) {
     try {
-      const userId = this.getUserId(req);
+      const userId = await this.getUserId(req);
       const analyticsData = await AnalyticsService.getSummary(userId);
 
       return NextResponse.json({

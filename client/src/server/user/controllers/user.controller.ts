@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { UserService } from "../services/user.service";
-import { JwtUtils } from "@/utils/jwt";
+import { getAuthenticatedUser } from "@/lib/auth/get-authenticated-user";
 import { z } from "zod";
 
 const updateProfileSchema = z.object({
@@ -16,21 +16,14 @@ const changePasswordSchema = z.object({
 });
 
 export class UserController {
-  private static getUserId(req: NextRequest): string {
-    const token = req.cookies.get("ledger_session")?.value;
-    if (!token) {
-      throw new Error("Unauthorized session access");
-    }
-    const payload = JwtUtils.verify(token);
-    if (!payload) {
-      throw new Error("Unauthorized session access");
-    }
-    return payload.userId;
+  private static async getUserId(req: NextRequest): Promise<string> {
+    const user = await getAuthenticatedUser(req);
+    return user.userId;
   }
 
   static async get(req: NextRequest) {
     try {
-      const userId = this.getUserId(req);
+      const userId = await this.getUserId(req);
       const profile = await UserService.getProfile(userId);
       return NextResponse.json({ success: true, data: profile });
     } catch (error: any) {
@@ -43,7 +36,7 @@ export class UserController {
 
   static async update(req: NextRequest) {
     try {
-      const userId = this.getUserId(req);
+      const userId = await this.getUserId(req);
       const body = await req.json();
       
       if (body.oldPassword || body.newPassword) {
@@ -80,7 +73,7 @@ export class UserController {
 
   static async delete(req: NextRequest) {
     try {
-      const userId = this.getUserId(req);
+      const userId = await this.getUserId(req);
       await UserService.deleteUser(userId);
       
       const response = NextResponse.json({ success: true, data: { message: "Account erased successfully" } });

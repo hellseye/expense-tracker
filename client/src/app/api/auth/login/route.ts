@@ -1,6 +1,2 @@
-import { NextRequest } from "next/server";
-import { AuthController } from "@/server/auth/controllers/auth.controller";
-
-export async function POST(req: NextRequest) {
-  return AuthController.login(req);
-}
+import { POST as v1Login } from "../../v1/auth/login/route";
+export { v1Login as POST };

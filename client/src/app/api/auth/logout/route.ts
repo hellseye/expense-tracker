@@ -1,5 +1,2 @@
-import { AuthController } from "@/server/auth/controllers/auth.controller";
-
-export async function POST() {
-  return AuthController.logout();
-}
+import { POST as v1Logout } from "../../v1/auth/logout/route";
+export { v1Logout as POST };

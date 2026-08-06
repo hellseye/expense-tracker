@@ -1,24 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ExpenseService } from "../services/expense.service";
 import { createExpenseSchema, updateExpenseSchema, queryExpenseSchema } from "@/validations/expense.validation";
-import { JwtUtils } from "@/utils/jwt";
+import { getAuthenticatedUser } from "@/lib/auth/get-authenticated-user";
 
 export class ExpenseController {
-  private static getUserId(req: NextRequest): string {
-    const token = req.cookies.get("ledger_session")?.value;
-    if (!token) {
-      throw new Error("Unauthorized session access");
-    }
-    const payload = JwtUtils.verify(token);
-    if (!payload) {
-      throw new Error("Unauthorized session access");
-    }
-    return payload.userId;
+  private static async getUserId(req: NextRequest): Promise<string> {
+    const user = await getAuthenticatedUser(req);
+    return user.userId;
   }
 
   static async list(req: NextRequest) {
     try {
-      const userId = this.getUserId(req);
+      const userId = await this.getUserId(req);
       const url = new URL(req.url);
       const categoryIdParam = url.searchParams.get("categoryId");
       const paymentMethodParam = url.searchParams.get("paymentMethod");
@@ -70,7 +63,7 @@ export class ExpenseController {
 
   static async create(req: NextRequest) {
     try {
-      const userId = this.getUserId(req);
+      const userId = await this.getUserId(req);
       const body = await req.json();
       const validatedInput = createExpenseSchema.parse(body);
 
@@ -103,7 +96,7 @@ export class ExpenseController {
 
   static async get(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
-      const userId = this.getUserId(req);
+      const userId = await this.getUserId(req);
       const { id } = await params;
       const expense = await ExpenseService.getExpenseDetails(id, userId);
 
@@ -121,7 +114,7 @@ export class ExpenseController {
 
   static async update(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
-      const userId = this.getUserId(req);
+      const userId = await this.getUserId(req);
       const { id } = await params;
       const body = await req.json();
       const validatedInput = updateExpenseSchema.parse(body);
@@ -155,7 +148,7 @@ export class ExpenseController {
 
   static async delete(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
-      const userId = this.getUserId(req);
+      const userId = await this.getUserId(req);
       const { id } = await params;
       await ExpenseService.deleteExpense(id, userId);
 
