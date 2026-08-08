@@ -6,12 +6,9 @@ import { JwtUtils } from "@/utils/jwt";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    console.log(`[AUTH LOG] Login attempt for email: "${body?.email}"`);
-
     const validated = loginSchema.parse(body);
 
     const user = await AuthService.validateUser(validated);
-    console.log(`[AUTH LOG] Credentials validated successfully for userId: "${user.id}" (${user.email})`);
 
     const token = JwtUtils.sign({
       userId: user.id,
@@ -41,7 +38,6 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error: any) {
-    console.error(`[AUTH LOG ERROR] Login failed:`, error.message || error);
     if (error.name === "ZodError") {
       return NextResponse.json(
         {
