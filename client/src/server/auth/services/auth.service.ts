@@ -16,17 +16,7 @@ export class AuthService {
   }
 
   static async validateUser(input: LoginInput) {
-    let user = await AuthRepository.findUserByEmail(input.email);
-    
-    // Auto-create demo user if missing
-    if (!user && input.email === "mayank@ledger.dev") {
-      user = await this.register({
-        name: "Demo User",
-        email: "mayank@ledger.dev",
-        password: input.password || "password123",
-        currency: "INR",
-      });
-    }
+    const user = await AuthRepository.findUserByEmail(input.email);
 
     if (!user) {
       throw new Error("Account not found with this email. Please sign up first.");

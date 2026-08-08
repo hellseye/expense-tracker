@@ -56,16 +56,6 @@ export function LoginView() {
     }
   };
 
-  const handleDemoAccess = async () => {
-    await login("mayank@ledger.dev", "password123");
-    toast({
-      type: "success",
-      title: "Guest Session Active",
-      description: "Opened Ledger in instant demo mode.",
-    });
-    window.location.href = "/dashboard";
-  };
-
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       {/* Background Glow Accents */}
@@ -122,10 +112,6 @@ export function LoginView() {
             <Button variant="outline" onClick={handleGoogleLogin} className="w-full">
               <Chrome className="h-4 w-4 text-zinc-300" />
               <span>Google SSO</span>
-            </Button>
-
-            <Button variant="secondary" onClick={handleDemoAccess} className="w-full border-primary/30 text-primary hover:bg-primary/10">
-              <span>Instant Demo / Guest Access</span>
             </Button>
           </div>
 

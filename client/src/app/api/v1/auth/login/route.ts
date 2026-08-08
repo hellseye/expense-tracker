@@ -6,9 +6,13 @@ import { SessionService } from "@/lib/auth/session-service";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    console.log(`[AUTH DEBUG] Login attempt for email: "${body?.email}"`);
+
     const validated = loginSchema.parse(body);
 
     const user = await AuthService.validateUser(validated);
+    console.log(`[AUTH DEBUG] Password validated for userId: "${user.id}" (${user.email})`);
+
     const userAgent = req.headers.get("user-agent");
     const ipAddress = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip");
 
@@ -18,6 +22,7 @@ export async function POST(req: NextRequest) {
       ipAddress,
       body.deviceId
     );
+    console.log(`[AUTH DEBUG] Session created successfully for userId: "${user.id}"`);
 
     const response = NextResponse.json({
       ...sessionPayload,
@@ -35,6 +40,7 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error: any) {
+    console.error(`[AUTH DEBUG ERROR] Login failed:`, error.message || error);
     if (error.name === "ZodError") {
       return NextResponse.json(
         {
