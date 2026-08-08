@@ -6,16 +6,21 @@ function getBaseUrl(req: NextRequest) {
   if (process.env.NEXT_PUBLIC_APP_URL) {
     return process.env.NEXT_PUBLIC_APP_URL.replace(/\/+$/, "");
   }
+
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || req.nextUrl.host;
+  if (host && !host.includes("localhost")) {
+    const proto = req.headers.get("x-forwarded-proto") || "https";
+    return `${proto}://${host}`.replace(/\/+$/, "");
+  }
+
   if (process.env.NEXTAUTH_URL && !process.env.NEXTAUTH_URL.includes("localhost")) {
     return process.env.NEXTAUTH_URL.replace(/\/+$/, "");
   }
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL.replace(/\/+$/, "")}`;
   }
-  
-  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || req.nextUrl.host;
-  const proto = req.headers.get("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https");
-  return `${proto}://${host}`.replace(/\/+$/, "");
+
+  return "http://localhost:3000";
 }
 
 export async function GET(req: NextRequest) {
@@ -56,7 +61,7 @@ export async function GET(req: NextRequest) {
     if (!tokenRes.ok) {
       const errBody = await tokenRes.text();
       console.error("Failed to exchange Google auth code:", errBody);
-      return NextResponse.redirect(`${fallbackRedirect}?error=token_exchange_failed`);
+      return NextResponse.redirect(`${fallbackRedirect}?error=token_exchange_failed&details=${encodeURIComponent(errBody)}`);
     }
 
     const tokens = await tokenRes.json();
@@ -124,7 +129,7 @@ export async function GET(req: NextRequest) {
     console.log(`Google OAuth session created for user: ${email}`);
     return response;
   } catch (err: any) {
-    console.error("Google OAuth callback exception:", err);
-    return NextResponse.redirect(`${fallbackRedirect}?error=auth_internal_error`);
+    console.error("Google OAuth callback exception:", err?.message || err);
+    return NextResponse.redirect(`${fallbackRedirect}?error=auth_internal_error&msg=${encodeURIComponent(err?.message || "unknown")}`);
   }
 }

@@ -4,6 +4,13 @@ function getBaseUrl(req: NextRequest) {
   if (process.env.NEXT_PUBLIC_APP_URL) {
     return process.env.NEXT_PUBLIC_APP_URL.replace(/\/+$/, "");
   }
+  
+  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || req.nextUrl.host;
+  if (host && !host.includes("localhost")) {
+    const proto = req.headers.get("x-forwarded-proto") || "https";
+    return `${proto}://${host}`.replace(/\/+$/, "");
+  }
+
   if (process.env.NEXTAUTH_URL && !process.env.NEXTAUTH_URL.includes("localhost")) {
     return process.env.NEXTAUTH_URL.replace(/\/+$/, "");
   }
@@ -11,9 +18,7 @@ function getBaseUrl(req: NextRequest) {
     return `https://${process.env.VERCEL_URL.replace(/\/+$/, "")}`;
   }
   
-  const host = req.headers.get("x-forwarded-host") || req.headers.get("host") || req.nextUrl.host;
-  const proto = req.headers.get("x-forwarded-proto") || (host.includes("localhost") ? "http" : "https");
-  return `${proto}://${host}`.replace(/\/+$/, "");
+  return "http://localhost:3000";
 }
 
 export async function GET(req: NextRequest) {
