@@ -186,15 +186,36 @@ export function AnalyticsView() {
             <h3 className="text-base font-bold text-zinc-100 tracking-tight mb-1">Financial Health Score</h3>
             <p className="text-xs text-zinc-400 mb-4">Real-time budget utilization index</p>
 
-            <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-200/50 border border-white/5 mb-4">
-              <div className="text-3xl font-extrabold text-primary">
-                {summary.budgetHealthScore || 85}<span className="text-sm font-normal text-zinc-400">/100</span>
-              </div>
-              <div className="flex-1">
-                <p className="text-xs font-bold text-zinc-200">Excellent Spending Cushion</p>
-                <p className="text-[11px] text-zinc-400">You are within standard monthly budget thresholds.</p>
-              </div>
-            </div>
+            {(() => {
+              const score = summary.budgetHealthScore ?? 100;
+              let title = "Optimal Spending Control";
+              let desc = "Your expense velocity & daily pace are well balanced.";
+              let badgeColor = "text-emerald-400";
+              if (score < 50) {
+                title = "High Expense Pace";
+                desc = "Recent transaction surge flagged. Review high spending categories.";
+                badgeColor = "text-rose-400";
+              } else if (score < 70) {
+                title = "Moderate Spending Surge";
+                desc = "High category concentration or daily spending surge detected.";
+                badgeColor = "text-amber-400";
+              } else if (score < 85) {
+                title = "Healthy Expense Rate";
+                desc = "Spending is steady with minor fluctuations.";
+                badgeColor = "text-purple-400";
+              }
+              return (
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-surface-200/50 border border-white/5 mb-4">
+                  <div className={`text-3xl font-extrabold ${badgeColor}`}>
+                    {score}<span className="text-sm font-normal text-zinc-400">/100</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-bold text-zinc-200">{title}</p>
+                    <p className="text-[11px] text-zinc-400">{desc}</p>
+                  </div>
+                </div>
+              );
+            })()}
 
             {summary.monthOverMonth && (
               <div className="p-4 rounded-xl bg-surface-200/30 border border-white/5 text-xs space-y-1">

@@ -148,9 +148,32 @@ export class AnalyticsService {
       .filter((e) => new Date(e.expenseDate) >= startOfToday)
       .reduce((acc, curr) => acc + Number(curr.amount), 0);
 
-    const budgetHealthScore = totalIncome > 0
-      ? Math.max(10, Math.min(100, Math.round(100 - (currentMonthExpenses / totalIncome) * 100)))
-      : 100;
+    // 9. Pure Expense-Driven Financial Health Score (0-100)
+    let velocityScore = 90;
+    if (prevMonthExpenses > 0) {
+      if (monthChangePercentage <= 0) {
+        velocityScore = 100;
+      } else {
+        velocityScore = Math.max(20, Math.round(100 - monthChangePercentage * 0.8));
+      }
+    }
+
+    const topCatAmount = topCategories[0]?.amount || 0;
+    const topCatRatio = totalExpenses > 0 ? (topCatAmount / totalExpenses) * 100 : 0;
+    let categoryScore = 100;
+    if (topCatRatio > 35) {
+      categoryScore = Math.max(20, Math.round(100 - (topCatRatio - 35) * 1.5));
+    }
+
+    let dailyScore = 100;
+    if (averageDailySpending > 0 && todaySpending > averageDailySpending) {
+      const surgeRatio = todaySpending / averageDailySpending;
+      dailyScore = Math.max(30, Math.round(100 - (surgeRatio - 1) * 40));
+    }
+
+    const budgetHealthScore = totalExpenses === 0
+      ? 100
+      : Math.max(15, Math.min(100, Math.round(0.4 * velocityScore + 0.3 * categoryScore + 0.3 * dailyScore)));
 
     return {
       totalExpenses,
