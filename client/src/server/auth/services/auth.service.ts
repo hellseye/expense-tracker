@@ -16,16 +16,30 @@ export class AuthService {
   }
 
   static async validateUser(input: LoginInput) {
-    const user = await AuthRepository.findUserByEmail(input.email);
+    let user = await AuthRepository.findUserByEmail(input.email);
     
-    if (!user || !user.passwordHash) {
-      throw new Error("Invalid email or password");
+    // Auto-create demo user if missing
+    if (!user && input.email === "mayank@ledger.dev") {
+      user = await this.register({
+        name: "Demo User",
+        email: "mayank@ledger.dev",
+        password: input.password || "password123",
+        currency: "INR",
+      });
+    }
+
+    if (!user) {
+      throw new Error("Account not found with this email. Please sign up first.");
+    }
+
+    if (!user.passwordHash) {
+      throw new Error("This account was registered using Google SSO. Please click 'Google SSO' to sign in.");
     }
 
     const isValid = await bcryptjs.compare(input.password, user.passwordHash);
     
     if (!isValid) {
-      throw new Error("Invalid email or password");
+      throw new Error("Incorrect password. Please try again.");
     }
 
     return user;
