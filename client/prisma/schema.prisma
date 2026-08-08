@@ -15,7 +15,6 @@ model User {
   emailVerified Boolean   @default(false)
   image         String?
   passwordHash  String?   // For email/credentials authentication
-  role          String    @default("USER")
   currency      String    @default("INR")
   theme         String    @default("dark")
   createdAt     DateTime  @default(now())
@@ -27,36 +26,17 @@ model User {
   expenses      Expense[]
 }
 
-// 🔑 Enterprise Session Model
+// 🔑 Session Model
 model Session {
-  id             String   @id @default(cuid())
-  sessionToken   String   @unique
-  userId         String
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Device Fingerprint & Location Attributes
-  deviceId       String   @default(cuid())
-  deviceName     String   @default("Unknown Device")
-  browser        String   @default("Unknown")
-  browserVersion String   @default("1.0")
-  os             String   @default("Unknown")
-  deviceType     String   @default("DESKTOP")
-  ipAddress      String?
-  userAgent      String?
-
-  // Session Security & Lifecycle Attributes
-  loginTime      DateTime @default(now())
-  lastActivity   DateTime @default(now())
-  expiresAt      DateTime
-  refreshCount   Int      @default(0)
-  isTrusted      Boolean  @default(false)
-  isRevoked      Boolean  @default(false)
-
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  @@index([userId])
-  @@index([sessionToken])
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // 🔗 Better Auth Account (For Google OAuth or credentials provider)

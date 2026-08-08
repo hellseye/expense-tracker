@@ -1,37 +1,43 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SessionService } from "@/lib/auth/session-service";
+import { JwtUtils } from "@/utils/jwt";
+import { prisma } from "@/lib/db/prisma";
 
 export async function POST(req: NextRequest) {
   try {
-    const refreshToken = req.cookies.get("ledger_session")?.value || (await req.json().catch(() => ({}))).refreshToken;
-
+    const refreshToken = req.cookies.get("ledger_session")?.value;
     if (!refreshToken) {
-      return NextResponse.json(
-        { message: "No refresh token provided or active session found" },
-        { status: 401 }
-      );
+      return NextResponse.json({ message: "No refresh token provided" }, { status: 401 });
     }
 
-    const userAgent = req.headers.get("user-agent");
-    const ipAddress = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip");
+    const payload = JwtUtils.verify(refreshToken);
+    if (!payload || !payload.userId) {
+      return NextResponse.json({ message: "Invalid or expired session" }, { status: 401 });
+    }
 
-    const refreshedPayload = await SessionService.refreshSession(refreshToken, userAgent, ipAddress);
-
-    const response = NextResponse.json(refreshedPayload);
-
-    // Set rotated HttpOnly refresh cookie
-    response.cookies.set("ledger_session", refreshedPayload.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 30 * 24 * 60 * 60, // 30 days
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { id: true, name: true, email: true, image: true },
     });
 
-    return response;
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 401 });
+    }
+
+    const newAccessToken = JwtUtils.sign({
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+    });
+
+    return NextResponse.json({
+      message: "Session refreshed successfully",
+      accessToken: newAccessToken,
+      refreshToken,
+      user,
+    });
   } catch (error: any) {
     return NextResponse.json(
-      { message: error.message || "Failed to refresh session" },
+      { message: error.message || "Session refresh failed" },
       { status: 401 }
     );
   }

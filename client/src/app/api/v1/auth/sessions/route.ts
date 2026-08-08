@@ -1,32 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SessionService } from "@/lib/auth/session-service";
+import { getAuthenticatedUser } from "@/lib/auth/get-authenticated-user";
 import { prisma } from "@/lib/db/prisma";
 
 export async function GET(req: NextRequest) {
   try {
-    const refreshToken = req.cookies.get("ledger_session")?.value;
-    if (!refreshToken) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const authUser = await getAuthenticatedUser(req);
 
-    const dbSession = await prisma.session.findUnique({
-      where: { sessionToken: refreshToken },
+    const sessions = await prisma.session.findMany({
+      where: {
+        userId: authUser.userId,
+        expiresAt: { gt: new Date() },
+      },
+      orderBy: { createdAt: "desc" },
     });
 
-    if (!dbSession || dbSession.isRevoked || dbSession.expiresAt < new Date()) {
-      return NextResponse.json({ message: "Unauthorized or session expired" }, { status: 401 });
-    }
-
-    const sessions = await SessionService.getUserSessions(dbSession.userId, dbSession.id);
-
     return NextResponse.json({
-      message: "Active device sessions retrieved successfully",
+      message: "Active sessions retrieved successfully",
       sessions,
     });
   } catch (error: any) {
     return NextResponse.json(
       { message: error.message || "Failed to list sessions" },
-      { status: 500 }
+      { status: 401 }
     );
   }
 }

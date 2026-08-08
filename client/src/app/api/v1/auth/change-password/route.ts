@@ -1,30 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { changePasswordSchema } from "@/validations/auth.validation";
+import { getAuthenticatedUser } from "@/lib/auth/get-authenticated-user";
 import { prisma } from "@/lib/db/prisma";
 import bcrypt from "bcryptjs";
 import { SessionService } from "@/lib/auth/session-service";
 
 export async function POST(req: NextRequest) {
   try {
-    const refreshToken = req.cookies.get("ledger_session")?.value;
-    if (!refreshToken) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const authUser = await getAuthenticatedUser(req);
 
-    const dbSession = await prisma.session.findUnique({
-      where: { sessionToken: refreshToken },
-      include: { user: true },
+    const user = await prisma.user.findUnique({
+      where: { id: authUser.userId },
     });
 
-    if (!dbSession || dbSession.isRevoked || dbSession.expiresAt < new Date()) {
-      return NextResponse.json({ message: "Unauthorized or session expired" }, { status: 401 });
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     const body = await req.json();
     const { currentPassword, newPassword } = changePasswordSchema.parse(body);
 
-    if (dbSession.user.passwordHash) {
-      const isMatch = await bcrypt.compare(currentPassword, dbSession.user.passwordHash);
+    if (user.passwordHash) {
+      const isMatch = await bcrypt.compare(currentPassword, user.passwordHash);
       if (!isMatch) {
         return NextResponse.json({ message: "Current password is incorrect" }, { status: 400 });
       }
@@ -32,15 +29,14 @@ export async function POST(req: NextRequest) {
 
     const newHash = await bcrypt.hash(newPassword, 10);
     await prisma.user.update({
-      where: { id: dbSession.userId },
+      where: { id: user.id },
       data: { passwordHash: newHash },
     });
 
-    // Optionally revoke all other sessions for security
-    await SessionService.revokeAllUserSessions(dbSession.userId, dbSession.id);
+    await SessionService.revokeAllUserSessions(user.id);
 
     return NextResponse.json({
-      message: "Password changed successfully. Other device sessions revoked for security.",
+      message: "Password changed successfully. Other sessions revoked for security.",
     });
   } catch (error: any) {
     if (error.name === "ZodError") {

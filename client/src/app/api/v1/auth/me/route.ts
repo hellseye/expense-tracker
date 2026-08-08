@@ -1,28 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SessionService } from "@/lib/auth/session-service";
+import { getAuthenticatedUser } from "@/lib/auth/get-authenticated-user";
+import { prisma } from "@/lib/db/prisma";
 
 export async function GET(req: NextRequest) {
   try {
-    const refreshToken = req.cookies.get("ledger_session")?.value;
+    const authUser = await getAuthenticatedUser(req);
 
-    if (!refreshToken) {
-      return NextResponse.json(
-        { message: "Unauthorized: No active session token" },
-        { status: 401 }
-      );
-    }
+    const dbUser = await prisma.user.findUnique({
+      where: { id: authUser.userId },
+      select: { id: true, name: true, email: true, image: true, currency: true, theme: true, createdAt: true },
+    });
 
-    const sessionDetails = await SessionService.getSessionDetails(refreshToken);
-    if (!sessionDetails) {
-      return NextResponse.json(
-        { message: "Unauthorized: Invalid or expired session" },
-        { status: 401 }
-      );
+    if (!dbUser) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
     return NextResponse.json({
-      ...sessionDetails,
       message: "Authenticated user details retrieved successfully",
+      user: dbUser,
     });
   } catch (error: any) {
     return NextResponse.json(

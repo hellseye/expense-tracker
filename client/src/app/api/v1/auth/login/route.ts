@@ -1,36 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { loginSchema } from "@/validations/auth.validation";
 import { AuthService } from "@/server/auth/services/auth.service";
-import { SessionService } from "@/lib/auth/session-service";
+import { JwtUtils } from "@/utils/jwt";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    console.log(`[AUTH DEBUG] Login attempt for email: "${body?.email}"`);
+    console.log(`[AUTH LOG] Login attempt for email: "${body?.email}"`);
 
     const validated = loginSchema.parse(body);
 
     const user = await AuthService.validateUser(validated);
-    console.log(`[AUTH DEBUG] Password validated for userId: "${user.id}" (${user.email})`);
+    console.log(`[AUTH LOG] Credentials validated successfully for userId: "${user.id}" (${user.email})`);
 
-    const userAgent = req.headers.get("user-agent");
-    const ipAddress = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip");
-
-    const sessionPayload = await SessionService.createSession(
-      user.id,
-      userAgent,
-      ipAddress,
-      body.deviceId
-    );
-    console.log(`[AUTH DEBUG] Session created successfully for userId: "${user.id}"`);
-
-    const response = NextResponse.json({
-      ...sessionPayload,
-      message: "Login successful",
+    const token = JwtUtils.sign({
+      userId: user.id,
+      email: user.email,
+      name: user.name,
     });
 
-    // Set HttpOnly Refresh Session Cookie
-    response.cookies.set("ledger_session", sessionPayload.refreshToken, {
+    const response = NextResponse.json({
+      message: "Login successful",
+      accessToken: token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+      },
+    });
+
+    // Set HttpOnly Session Cookie
+    response.cookies.set("ledger_session", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error: any) {
-    console.error(`[AUTH DEBUG ERROR] Login failed:`, error.message || error);
+    console.error(`[AUTH LOG ERROR] Login failed:`, error.message || error);
     if (error.name === "ZodError") {
       return NextResponse.json(
         {

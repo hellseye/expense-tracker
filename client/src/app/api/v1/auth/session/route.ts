@@ -1,39 +1,44 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SessionService } from "@/lib/auth/session-service";
-import { TokenService } from "@/lib/auth/token-service";
+import { JwtUtils } from "@/utils/jwt";
+import { prisma } from "@/lib/db/prisma";
 
 export async function GET(req: NextRequest) {
   try {
-    const refreshToken = req.cookies.get("ledger_session")?.value;
-    const authHeader = req.headers.get("authorization");
-    const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.substring(7) : null;
+    const token = req.cookies.get("ledger_session")?.value || req.headers.get("authorization")?.replace("Bearer ", "");
 
-    if (bearerToken) {
-      const payload = TokenService.verifyAccessToken(bearerToken);
-      if (payload) {
-        const sessionDetails = await SessionService.getSessionDetails(refreshToken || "", bearerToken);
-        if (sessionDetails) {
-          return NextResponse.json(sessionDetails);
-        }
-      }
-    }
-
-    if (!refreshToken) {
+    if (!token) {
       return NextResponse.json(
         { message: "No active session" },
         { status: 401 }
       );
     }
 
-    const sessionDetails = await SessionService.getSessionDetails(refreshToken);
-    if (!sessionDetails) {
+    const payload = JwtUtils.verify(token);
+    if (!payload || !payload.userId) {
       return NextResponse.json(
         { message: "Session expired or invalid" },
         { status: 401 }
       );
     }
 
-    return NextResponse.json(sessionDetails);
+    // Optionally fetch latest user image/name from DB
+    const dbUser = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { id: true, name: true, email: true, image: true, currency: true, theme: true },
+    }).catch(() => null);
+
+    const userPayload = dbUser || {
+      id: payload.userId,
+      email: payload.email,
+      name: payload.name || "Ledger User",
+      image: null,
+    };
+
+    return NextResponse.json({
+      message: "Session active",
+      accessToken: token,
+      user: userPayload,
+    });
   } catch (error: any) {
     return NextResponse.json(
       { message: error.message || "Session verification failed" },

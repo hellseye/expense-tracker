@@ -1,43 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
-import { SessionService } from "@/lib/auth/session-service";
-import { prisma } from "@/lib/db/prisma";
+import { NextResponse } from "next/server";
 
-export async function POST(req: NextRequest) {
-  try {
-    const refreshToken = req.cookies.get("ledger_session")?.value;
-    const body = await req.json().catch(() => ({}));
+export async function POST() {
+  const response = NextResponse.json({
+    message: "Logged out successfully",
+  });
 
-    if (refreshToken) {
-      const dbSession = await prisma.session.findUnique({
-        where: { sessionToken: refreshToken },
-      });
+  response.cookies.set("ledger_session", "", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    expires: new Date(0),
+  });
 
-      if (dbSession) {
-        if (body.allDevices) {
-          await SessionService.revokeAllUserSessions(dbSession.userId);
-        } else {
-          await SessionService.revokeSession(dbSession.id, dbSession.userId);
-        }
-      }
-    }
-
-    const response = NextResponse.json({
-      message: body.allDevices ? "Logged out from all devices successfully" : "Logged out successfully",
-    });
-
-    response.cookies.set("ledger_session", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 0,
-    });
-
-    return response;
-  } catch (error: any) {
-    return NextResponse.json(
-      { message: error.message || "Logout failed" },
-      { status: 500 }
-    );
-  }
+  return response;
 }

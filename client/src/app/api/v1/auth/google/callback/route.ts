@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { SessionService } from "@/lib/auth/session-service";
+import { JwtUtils } from "@/utils/jwt";
 
 function getBaseUrl(req: NextRequest) {
   if (process.env.NEXT_PUBLIC_APP_URL) {
@@ -30,17 +30,17 @@ export async function GET(req: NextRequest) {
   const baseUrl = getBaseUrl(req);
   const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
-  console.log(`[OAUTH DEBUG] Received Google OAuth Callback. baseUrl: "${baseUrl}", redirectUri: "${redirectUri}", codePresent: ${Boolean(code)}`);
+  console.log(`[OAUTH LOG] Received Google OAuth Callback. baseUrl: "${baseUrl}", redirectUri: "${redirectUri}", codePresent: ${Boolean(code)}`);
 
   const fallbackRedirect = `${baseUrl}/login`;
 
   if (error) {
-    console.error("[OAUTH DEBUG ERROR] Google OAuth error callback:", error);
+    console.error("[OAUTH LOG ERROR] Google OAuth error callback:", error);
     return NextResponse.redirect(`${fallbackRedirect}?error=${encodeURIComponent(error)}`);
   }
 
   if (!code) {
-    console.error("[OAUTH DEBUG ERROR] Missing OAuth code parameter");
+    console.error("[OAUTH LOG ERROR] Missing OAuth code parameter");
     return NextResponse.redirect(`${fallbackRedirect}?error=missing_auth_code`);
   }
 
@@ -48,13 +48,13 @@ export async function GET(req: NextRequest) {
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
   if (!clientId || !clientSecret) {
-    console.error("[OAUTH DEBUG ERROR] Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET environment variables on server!");
+    console.error("[OAUTH LOG ERROR] Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET environment variables on server!");
     return NextResponse.redirect(`${fallbackRedirect}?error=missing_google_env_keys`);
   }
 
   try {
     // 1. Exchange OAuth code for Google access token
-    console.log(`[OAUTH DEBUG] Exchanging authorization code with Google token endpoint...`);
+    console.log(`[OAUTH LOG] Exchanging authorization code with Google token endpoint...`);
     const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
 
     if (!tokenRes.ok) {
       const errBody = await tokenRes.text();
-      console.error("[OAUTH DEBUG ERROR] Failed to exchange Google auth code. Status:", tokenRes.status, "Body:", errBody);
+      console.error("[OAUTH LOG ERROR] Failed to exchange Google auth code. Status:", tokenRes.status, "Body:", errBody);
       return NextResponse.redirect(`${fallbackRedirect}?error=token_exchange_failed&details=${encodeURIComponent(errBody)}`);
     }
 
@@ -77,13 +77,13 @@ export async function GET(req: NextRequest) {
     const googleAccessToken = tokens.access_token;
 
     // 2. Fetch user profile from Google UserInfo API
-    console.log(`[OAUTH DEBUG] Google access token received. Fetching user profile from Google UserInfo API...`);
+    console.log(`[OAUTH LOG] Google access token received. Fetching user profile from Google UserInfo API...`);
     const userRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
       headers: { Authorization: `Bearer ${googleAccessToken}` },
     });
 
     if (!userRes.ok) {
-      console.error("[OAUTH DEBUG ERROR] Failed to fetch Google user profile. Status:", userRes.status);
+      console.error("[OAUTH LOG ERROR] Failed to fetch Google user profile. Status:", userRes.status);
       return NextResponse.redirect(`${fallbackRedirect}?error=profile_fetch_failed`);
     }
 
@@ -92,10 +92,10 @@ export async function GET(req: NextRequest) {
     const name = profile.name || email.split("@")[0];
     const image = profile.picture || null;
 
-    console.log(`[OAUTH DEBUG] Google UserInfo retrieved: email="${email}", name="${name}"`);
+    console.log(`[OAUTH LOG] Google UserInfo retrieved: email="${email}", name="${name}"`);
 
     if (!email) {
-      console.error("[OAUTH DEBUG ERROR] Email not provided by Google UserInfo API");
+      console.error("[OAUTH LOG ERROR] Email not provided by Google UserInfo API");
       return NextResponse.redirect(`${fallbackRedirect}?error=email_not_provided`);
     }
 
@@ -116,24 +116,25 @@ export async function GET(req: NextRequest) {
           passwordHash: "",
         },
       });
-      console.log(`[OAUTH DEBUG] Created new user in database for email: ${email}`);
+      console.log(`[OAUTH LOG] Created new user in database for email: ${email}`);
     } else if (image && user.image !== image) {
       user = await prisma.user.update({
         where: { id: user.id },
         data: { image },
       });
-      console.log(`[OAUTH DEBUG] Updated existing user image in database for email: ${email}`);
+      console.log(`[OAUTH LOG] Updated existing user image in database for email: ${email}`);
     }
 
-    // 4. Create Production Session via SessionService
-    const userAgent = req.headers.get("user-agent");
-    const ipAddress = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip");
-
-    const sessionPayload = await SessionService.createSession(user.id, userAgent, ipAddress);
+    // 4. Sign custom JWT session token
+    const sessionToken = JwtUtils.sign({
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+    });
 
     // 5. Construct success redirect response and set HttpOnly session cookie
     const response = NextResponse.redirect(`${baseUrl}/dashboard`);
-    response.cookies.set("ledger_session", sessionPayload.refreshToken, {
+    response.cookies.set("ledger_session", sessionToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production" || baseUrl.startsWith("https"),
       sameSite: "lax",
@@ -141,10 +142,10 @@ export async function GET(req: NextRequest) {
       maxAge: 30 * 24 * 60 * 60, // 30 days
     });
 
-    console.log(`[OAUTH DEBUG SUCCESS] Google OAuth session created for user: ${email}. Redirecting to /dashboard`);
+    console.log(`[OAUTH LOG SUCCESS] Google OAuth session created for user: ${email}. Redirecting to /dashboard`);
     return response;
   } catch (err: any) {
-    console.error("[OAUTH DEBUG EXCEPTION] Google OAuth callback thrown error:", err?.stack || err?.message || err);
+    console.error("[OAUTH LOG EXCEPTION] Google OAuth callback thrown error:", err?.stack || err?.message || err);
     return NextResponse.redirect(`${fallbackRedirect}?error=auth_internal_error&msg=${encodeURIComponent(err?.message || "unknown")}`);
   }
 }

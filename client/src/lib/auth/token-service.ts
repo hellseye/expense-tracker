@@ -8,7 +8,7 @@ export interface AccessTokenPayload {
   email: string;
   name?: string;
   role: string;
-  sessionId: string;
+  sessionId?: string;
   iat?: number;
   exp?: number;
 }
